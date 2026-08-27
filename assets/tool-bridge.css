@@ -6,7 +6,7 @@
    by tool-bridge.js from the hub config; light/dark follows the
    shared "swpl.theme" preference.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
 :root {
   --swpl-fill: #c2410c;
@@ -26,8 +26,9 @@
   --swpl-border-strong: rgba(23, 23, 26, 0.18);
   --swpl-accent-soft: color-mix(in srgb, var(--swpl-fill) 12%, #ffffff);
 
-  --swpl-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --swpl-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --swpl-font: 'Geist', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --swpl-display: 'Space Grotesk', 'Geist', 'Segoe UI', system-ui, sans-serif;
+  --swpl-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --swpl-shadow: 0 22px 50px -28px rgba(40, 36, 32, 0.30);
   --swpl-shadow-soft: 0 12px 30px -22px rgba(40, 36, 32, 0.26);
 
@@ -185,6 +186,7 @@ html[data-theme="dark"] .container .xml-panel {
 html[data-theme="dark"] .container .workspace-shell { background: transparent !important; }
 html[data-theme="dark"] .container .workspace-stage {
   background:
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 22px 22px,
     radial-gradient(circle at top, color-mix(in srgb, rgb(var(--swpl-rgb)) 8%, transparent), transparent 42%),
     linear-gradient(180deg, #0b0b0d, #131316) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
@@ -752,3 +754,187 @@ html[data-theme="dark"] .eyebrow {
   min-width: 0;
 }
 .tool-panel-header-side .tool-switcher { flex: 1; min-width: 0; }
+
+/* ============================================================
+   DECK SKIN - brings the embedded tools up to the hub's
+   "Ember Command Deck" language in both themes. Pure overlay:
+   surfaces, type, radii and micro-details only; no layout or
+   behavior changes. The legacy sheets are id/!important heavy,
+   hence the weight on some rules.
+   ============================================================ */
+
+/* ---- Browser surfaces (all tools) ---- */
+::selection { background: var(--swpl-fill); color: #ffffff; }
+html[data-theme="dark"] ::selection { background: rgb(var(--swpl-rgb)); color: #221004; }
+:root { accent-color: var(--swpl-fill); }
+html[data-theme="dark"] { accent-color: rgb(var(--swpl-rgb)); }
+input, textarea { caret-color: var(--swpl-fill); }
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea { caret-color: rgb(var(--swpl-rgb)); }
+* { scrollbar-width: thin; scrollbar-color: var(--swpl-surface-strong) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--swpl-surface-strong);
+  border: 3px solid var(--swpl-bg);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--swpl-border-strong); }
+
+/* ---- Display type on tool headings ---- */
+.tool-panel-header h2,
+.preview-panel-copy h2,
+.xml-panel-header h2,
+.app-header h1,
+.topbar__copy h1,
+.section-head h2,
+.modal-content h2,
+.modal-content h3,
+.panel-section__title,
+.compare__filename {
+  font-family: var(--swpl-display) !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Layout Editor: light panel shells join the deck ---- */
+html:not([data-theme="dark"]) .container .tool-panel,
+html:not([data-theme="dark"]) .container .grid-panel,
+html:not([data-theme="dark"]) .container .xml-panel {
+  background: var(--swpl-surface) !important;
+  border: 1px solid var(--swpl-border) !important;
+  box-shadow: var(--swpl-shadow-soft) !important;
+}
+.container .tool-panel,
+.container .grid-panel,
+.container .xml-panel {
+  border-radius: 18px !important;
+}
+html:not([data-theme="dark"]) .container .tool-section,
+html:not([data-theme="dark"]) .container #canvas-search-section {
+  background: var(--swpl-surface-soft) !important;
+  border: 1px solid var(--swpl-border) !important;
+}
+.container .tool-section,
+.container #canvas-search-section {
+  border-radius: 12px !important;
+}
+
+/* Stage: a zinc well with the hub's dot grid, phone framed on top */
+.container .workspace-stage { border-radius: 16px !important; }
+html:not([data-theme="dark"]) .container .workspace-stage {
+  background:
+    radial-gradient(color-mix(in srgb, var(--swpl-text) 10%, transparent) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(180deg, #ececef, #e7e7eb) !important;
+  box-shadow: inset 0 1px 3px rgba(23, 23, 26, 0.07) !important;
+}
+html:not([data-theme="dark"]) .container .device-frame {
+  border-color: var(--swpl-border) !important;
+  box-shadow:
+    0 0 0 6px #ffffff,
+    0 0 0 7px var(--swpl-border-strong),
+    0 26px 50px -30px rgba(23, 23, 26, 0.35) !important;
+}
+
+/* Section labels: the ignition-tile tick, small */
+.container .tool-section-label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+}
+.container .tool-section-label::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 2.5px;
+  flex: none;
+  background: linear-gradient(150deg, var(--swpl-fill), var(--swpl-ink));
+}
+html[data-theme="dark"] .container .tool-section-label::before {
+  background: linear-gradient(150deg, rgb(var(--swpl-rgb)), color-mix(in srgb, rgb(var(--swpl-rgb)) 65%, #3a1c04));
+}
+
+/* Toolbox neutral buttons -> hub button language (light) */
+html:not([data-theme="dark"]) .layout-controls button.btn-neutral,
+html:not([data-theme="dark"]) .layout-controls button.btn-ghost {
+  background: var(--swpl-surface) !important;
+  border: 1px solid var(--swpl-border-strong) !important;
+  color: var(--swpl-text-2) !important;
+}
+html:not([data-theme="dark"]) .layout-controls button.btn-neutral:hover:not(:disabled),
+html:not([data-theme="dark"]) .layout-controls button.btn-ghost:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--swpl-fill) 45%, transparent) !important;
+  color: var(--swpl-text) !important;
+  background: var(--swpl-surface) !important;
+}
+html:not([data-theme="dark"]) .layout-controls button.btn-dark,
+html:not([data-theme="dark"]) .layout-controls button#toggle-xml-btn {
+  background: var(--swpl-text) !important;
+  color: #f6f6f7 !important;
+  border-color: transparent !important;
+}
+html:not([data-theme="dark"]) .layout-controls button.btn-dark:hover:not(:disabled),
+html:not([data-theme="dark"]) .layout-controls button#toggle-xml-btn:hover:not(:disabled) {
+  background: #2c2c31 !important;
+}
+.layout-controls button,
+.container .pagination button,
+.container #page-info {
+  border-radius: 9px !important;
+}
+
+/* Inputs: hairline + ember focus ring (both themes) */
+.container select,
+.container input[type="text"],
+.container input[type="number"],
+.container input[type="search"],
+.container textarea {
+  border-radius: 9px !important;
+}
+.container select:focus-visible,
+.container input[type="text"]:focus-visible,
+.container input[type="number"]:focus-visible,
+.container input[type="search"]:focus-visible,
+.container textarea:focus-visible {
+  outline: none !important;
+  border-color: color-mix(in srgb, var(--swpl-fill) 55%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--swpl-fill) 14%, transparent) !important;
+}
+html[data-theme="dark"] .container select:focus-visible,
+html[data-theme="dark"] .container input[type="text"]:focus-visible,
+html[data-theme="dark"] .container input[type="number"]:focus-visible,
+html[data-theme="dark"] .container input[type="search"]:focus-visible,
+html[data-theme="dark"] .container textarea:focus-visible {
+  border-color: color-mix(in srgb, rgb(var(--swpl-rgb)) 55%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, rgb(var(--swpl-rgb)) 16%, transparent) !important;
+}
+
+/* Canvas chrome (light): page-mode pills + readout as hub chips */
+html:not([data-theme="dark"]) .container .canvas-page-mode {
+  background: var(--swpl-surface-soft) !important;
+  border: 1px solid var(--swpl-border) !important;
+  border-radius: 999px !important;
+}
+html:not([data-theme="dark"]) .container .canvas-page-mode-btn.is-active {
+  background: var(--swpl-surface) !important;
+  color: var(--swpl-ink) !important;
+  box-shadow: var(--swpl-shadow-soft) !important;
+}
+html:not([data-theme="dark"]) .container #device-grid-readout {
+  font-family: var(--swpl-mono);
+}
+
+/* XML editor: mono + calm paper */
+.container .xml-content,
+.container .xml-editor {
+  font-family: var(--swpl-mono) !important;
+  border-radius: 12px !important;
+}
+html:not([data-theme="dark"]) .container .xml-content,
+html:not([data-theme="dark"]) .container .xml-editor {
+  background: #fbfbfc !important;
+  border: 1px solid var(--swpl-border-strong) !important;
+  color: var(--swpl-text) !important;
+}
+
+/* Modals join the deck radius */
+.modal-content { border-radius: 18px !important; }
