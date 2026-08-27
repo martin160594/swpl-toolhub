@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SWPL Local Tools">
+  <title>SWPL Local Tools</title>
+  <defs>
+    <linearGradient id="pf-base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#131d2b"/>
+      <stop offset="1" stop-color="#080c14"/>
+    </linearGradient>
+    <linearGradient id="pf-glyph" x1="12" y1="20" x2="50" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="0.55" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <radialGradient id="pf-glow" cx="0.3" cy="0.22" r="0.9">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- base tile -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#pf-base)"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#pf-glow)"/>
+  <!-- crisp accent edge + top highlight -->
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="14.25" fill="none" stroke="#38bdf8" stroke-opacity="0.22" stroke-width="1.5"/>
+  <path d="M17 3.5h30" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- terminal prompt: chevron + cursor -->
+  <g fill="none" stroke="url(#pf-glyph)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 23 L31 32 L20 41"/>
+    <path d="M35 42 H46"/>
+  </g>
+</svg>

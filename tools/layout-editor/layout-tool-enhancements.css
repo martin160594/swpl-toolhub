@@ -1,0 +1,586 @@
+/* ============================================================
+   Layout Tool — UI/UX Enhancements (Pro Max patch)
+   Loaded after assets/styles.css to override carefully.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Stable hover states (no layout shift / scale jitter)
+   ------------------------------------------------------------ */
+.app-grid .app-item:hover {
+  transform: none;
+}
+
+.app-grid .app-item.hotseat-app:hover {
+  transform: none;
+}
+
+.app-grid .app-item:hover {
+  /* Re-add subtle elevation without translate/scale */
+  box-shadow:
+    0 26px 38px -28px rgba(18, 33, 50, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  filter: brightness(1.015);
+}
+
+.app-grid .app-item.dragging:hover {
+  /* keep drag feedback intact */
+  filter: none;
+}
+
+/* ------------------------------------------------------------
+   2. Status pill: add status icon (color is not the only signal)
+   ------------------------------------------------------------ */
+.status-pill::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: currentColor;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+body.has-unsaved-changes .status-pill::before {
+  animation: status-pill-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes status-pill-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* ------------------------------------------------------------
+   3. Modal close as accessible button (semantics + focus)
+   ------------------------------------------------------------ */
+.modal .close,
+.modal .modal-close {
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+  border: 0;
+}
+
+.modal .close:focus-visible,
+.modal .modal-close:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------
+   4. Cart panel: Clear button row
+   ------------------------------------------------------------ */
+.tool-section-cart .tool-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cart-clear-btn {
+  appearance: none;
+  border: 1px solid var(--border, #D9E4EF);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--slate-700, #334155);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.cart-clear-btn:hover:not(:disabled),
+.cart-clear-btn:focus-visible:not(:disabled) {
+  background: rgba(254, 242, 242, 0.95);
+  border-color: rgba(252, 165, 165, 0.95);
+  color: #b42318;
+  outline: none;
+}
+
+.cart-clear-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------
+   5. Layout-Gen image preview thumbnail
+   ------------------------------------------------------------ */
+.layout-gen-thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(194, 209, 224, 0.95);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.layout-gen-thumb-row[hidden] {
+  display: none;
+}
+
+.layout-gen-thumb-image {
+  width: 84px;
+  height: 84px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(194, 209, 224, 0.9);
+  background: #fff;
+}
+
+.layout-gen-thumb-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.layout-gen-thumb-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--slate-800, #1e293b);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.layout-gen-thumb-size {
+  font-size: 0.78rem;
+  color: var(--slate-500, #64748b);
+}
+
+.layout-gen-thumb-clear {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate-500, #64748b);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.layout-gen-thumb-clear:hover,
+.layout-gen-thumb-clear:focus-visible {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--slate-800, #1e293b);
+  outline: none;
+}
+
+/* ------------------------------------------------------------
+   6. Layout-Gen Cancel button styling
+   ------------------------------------------------------------ */
+.layout-gen-action-row button#layout-gen-cancel-btn {
+  border-color: rgba(231, 76, 60, 0.32);
+  color: #b42318;
+  background:
+    linear-gradient(180deg, rgba(255, 245, 245, 0.98), rgba(254, 226, 226, 0.95));
+}
+
+.layout-gen-action-row button#layout-gen-cancel-btn:hover:not(:disabled),
+.layout-gen-action-row button#layout-gen-cancel-btn:focus-visible:not(:disabled) {
+  border-color: rgba(231, 76, 60, 0.56);
+  color: #991b1b;
+}
+
+.layout-gen-action-row button#layout-gen-cancel-btn[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------
+   7. Search bar in toolbox
+   ------------------------------------------------------------ */
+.canvas-search-wrapper {
+  position: relative;
+  margin-top: 6px;
+}
+
+.canvas-search-input {
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--border, #D9E4EF);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 8px 36px 8px 12px;
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--slate-800);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.canvas-search-input::placeholder {
+  color: var(--slate-400, #94a3b8);
+}
+
+.canvas-search-input:focus {
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  outline: none;
+}
+
+.canvas-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--slate-400);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  display: none;
+  padding: 0;
+}
+
+/* Override host .tool-panel .layout-controls button { width:100% } */
+.tool-panel .layout-controls .canvas-search-clear,
+body .layout-controls button.canvas-search-clear {
+  width: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--slate-400);
+}
+
+.canvas-search-clear.is-visible {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-search-clear:hover,
+.canvas-search-clear:focus-visible {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--slate-700);
+  outline: none;
+}
+
+/* Prevent host hover styles from applying to clear button */
+body .layout-controls button.canvas-search-clear:hover:not(:disabled),
+body .layout-controls button.canvas-search-clear:focus-visible:not(:disabled) {
+  background: rgba(15, 23, 42, 0.08);
+  border: 0;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+  width: 24px;
+  min-width: 24px;
+  color: var(--slate-700);
+}
+
+/* Highlight matched items on canvas */
+.app-grid .app-item.canvas-search-match {
+  outline: 2px solid rgba(245, 158, 11, 0.85);
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+.app-grid .app-item.canvas-search-dimmed {
+  opacity: 0.32;
+  filter: grayscale(0.4);
+}
+
+/* ------------------------------------------------------------
+   8. Keyboard shortcut cheatsheet (in Guide modal)
+   ------------------------------------------------------------ */
+.guide-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px 16px;
+  margin-top: 6px;
+}
+
+.guide-shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(241, 245, 249, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+.guide-shortcut-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.guide-shortcut-keys .guide-keycap {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 7px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--slate-700);
+  background: #fff;
+  border: 1px solid var(--border, #D9E4EF);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+}
+
+.guide-shortcut-label {
+  font-size: 13px;
+  color: var(--slate-700);
+  text-align: right;
+}
+
+/* ------------------------------------------------------------
+   9. Layout shrink warning toast (no extra rule, reuses .toast)
+   10. Multi-select highlight on canvas
+   ------------------------------------------------------------ */
+.app-grid .app-item.is-selected {
+  outline: 2px solid rgba(59, 130, 246, 0.92);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.canvas-multiselect-bar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  color: #e2ecff;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 12px 28px -22px rgba(15, 23, 42, 0.6);
+}
+
+.canvas-multiselect-bar[hidden] {
+  display: none;
+}
+
+.canvas-multiselect-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.canvas-multiselect-actions button {
+  appearance: none;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.7);
+  color: #e2ecff;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.canvas-multiselect-actions button:hover:not(:disabled),
+.canvas-multiselect-actions button:focus-visible:not(:disabled) {
+  background: rgba(59, 130, 246, 0.32);
+  border-color: rgba(59, 130, 246, 0.85);
+  outline: none;
+}
+
+.canvas-multiselect-actions button.is-danger:hover {
+  background: rgba(239, 68, 68, 0.34);
+  border-color: rgba(239, 68, 68, 0.85);
+}
+
+/* ------------------------------------------------------------
+   11. Respect prefers-reduced-motion
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  body.has-unsaved-changes .status-pill::before {
+    animation: none;
+  }
+
+  .app-grid .app-item,
+  .layout-gen-dropzone,
+  .layout-gen-choose-btn,
+  .layout-gen-action-row button,
+  .layout-gen-modal-actions button,
+  .canvas-page-mode-btn,
+  .cart-card {
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   12. Focus trap visual indicator (outline on modal backdrop)
+   ------------------------------------------------------------ */
+.modal:focus-visible {
+  outline: none;
+}
+
+.modal[data-focus-trapped] .modal-content {
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.35),
+    0 36px 90px -54px rgba(18, 33, 50, 0.48);
+}
+
+/* ------------------------------------------------------------
+   13. Compare XML swap button
+   ------------------------------------------------------------ */
+.compare-swap-btn {
+  appearance: none;
+  border: 1px solid var(--border, #D9E4EF);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--slate-600, #475569);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.compare-swap-btn:hover:not(:disabled),
+.compare-swap-btn:focus-visible:not(:disabled) {
+  background: rgba(238, 242, 255, 0.95);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: var(--slate-800, #1e293b);
+  outline: none;
+}
+
+/* ------------------------------------------------------------
+   14. Help modal mailto links
+   ------------------------------------------------------------ */
+.help-contact-email a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.help-contact-email a:hover,
+.help-contact-email a:focus-visible {
+  color: var(--primary-700, #1d4ed8);
+  outline: none;
+}
+
+/* ------------------------------------------------------------
+   15. Recent files list for Load XML
+   ------------------------------------------------------------ */
+.recent-files-section {
+  margin-top: 8px;
+}
+
+.recent-files-list {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+  max-height: 120px;
+  overflow: auto;
+}
+
+.recent-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(241, 245, 249, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--slate-700, #334155);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.recent-file-item:hover,
+.recent-file-item:focus-visible {
+  background: rgba(224, 242, 254, 0.8);
+  border-color: rgba(96, 165, 250, 0.6);
+  outline: none;
+}
+
+.recent-file-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.recent-file-date {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--slate-400, #94a3b8);
+}
+
+/* ------------------------------------------------------------
+   16. Toolbox header: Hub link + stacked switcher
+   ------------------------------------------------------------ */
+.hub-back-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0 0 2px;
+  color: var(--swpl-ink, #0e7490);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.hub-back-link:hover,
+.hub-back-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  outline: none;
+}
+
+.tool-panel-header {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.tool-switcher,
+.tool-switcher summary {
+  width: 100%;
+  min-width: 0;
+}
+
+.tool-panel-header h2 {
+  font-size: 20px;
+}
+
+.tool-panel-help {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tool-panel .layout-controls button.help-toolbox-btn,
+body .layout-controls button.help-toolbox-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.tool-panel-help > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}

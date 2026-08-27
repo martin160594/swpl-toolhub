@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Compress images entirely in your browser, with a Squoosh-style compare view." />
+  <meta name="theme-color" content="#f4f4f6" id="theme-color-meta" data-light="#f4f4f6" data-dark="#0e0e10" />
+  <title>Image Compression - SWPL ToolHub</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <script src="../../data/site-config.js"></script>
+  <script src="../../assets/tool-bridge.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../../assets/tool-bridge.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="ambient" aria-hidden="true">
+    <div class="grid-bg"></div>
+    <div class="glow glow--cyan"></div>
+    <div class="glow glow--violet"></div>
+  </div>
+
+  <header class="topbar">
+    <a class="topbar__back" href="../../index.html" aria-label="Back to tool hub">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      <span>Tool Hub</span>
+    </a>
+
+    <div class="topbar__brand">
+      <div class="topbar__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <path d="M3 14l4-4 4 4 7-7 3 3" />
+          <circle cx="9" cy="9" r="1.4" />
+        </svg>
+      </div>
+      <div class="topbar__copy">
+        <p class="eyebrow">SWPL local tool</p>
+        <h1>Image Compression</h1>
+      </div>
+    </div>
+
+    <button type="button" class="theme-toggle" id="theme-toggle" data-swpl-theme-toggle aria-label="Toggle light and dark theme" title="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+    </button>
+
+    <details class="tool-switcher">
+      <summary>
+        <span>Choose tool</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </summary>
+      <nav class="tool-switcher__menu" aria-label="Available tools">
+        <a href="../../index.html">Tool Hub</a>
+        <a href="../layout-editor/index.html">Layout Editor</a>
+        <a href="../cf-helper/index.html">CF Helper</a>
+        <a href="../image-compressor/index.html" aria-current="page">Image Compression</a>
+      </nav>
+    </details>
+  </header>
+
+  <main id="main" class="shell" data-view="list">
+    <!-- ─── LIST VIEW ───────────────────────────────────────────── -->
+    <section class="view view--list" data-view-name="list">
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Drop or browse images">
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
+        <div class="dropzone__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <div class="dropzone__copy">
+          <p class="dropzone__title">Drop images or click to browse</p>
+          <p class="dropzone__hint">
+            <span data-limit="files">up to 20 files</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span data-limit="size">50 MB each</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span id="supported-formats-hint">WebP, JPEG, PNG</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Compression settings">
+        <div class="control control--format">
+          <label class="control__label">Format</label>
+          <div class="pill-group" role="radiogroup" aria-label="Output format">
+            <button type="button" class="pill is-active" data-format="auto" role="radio" aria-checked="true">Auto</button>
+            <button type="button" class="pill" data-format="webp" role="radio" aria-checked="false">WebP</button>
+            <button type="button" class="pill" data-format="avif" role="radio" aria-checked="false">AVIF</button>
+            <button type="button" class="pill" data-format="jpeg" role="radio" aria-checked="false">JPEG</button>
+            <button type="button" class="pill" data-format="png" role="radio" aria-checked="false">PNG</button>
+          </div>
+        </div>
+
+        <div class="control control--quality">
+          <div class="control__head">
+            <label class="control__label" for="quality-range">Quality</label>
+            <span class="control__value" id="quality-value">50</span>
+          </div>
+          <input id="quality-range" class="range" type="range" min="1" max="100" value="50" step="1" aria-valuemin="1" aria-valuemax="100" aria-valuenow="50" />
+        </div>
+
+        <div class="control control--width">
+          <label class="control__label" for="width-select">Max width</label>
+          <select id="width-select" class="select">
+            <option value="9999" selected>Original</option>
+            <option value="2400">2400 px</option>
+            <option value="1600">1600 px</option>
+            <option value="1200">1200 px</option>
+            <option value="800">800 px</option>
+          </select>
+        </div>
+
+        <button type="button" id="recompress-btn" class="btn btn--ghost" hidden>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+          <span>Recompress</span>
+        </button>
+      </div>
+
+      <div class="banner banner--error" id="error-banner" hidden role="alert"></div>
+
+      <div class="file-grid" id="file-grid" aria-live="polite"></div>
+
+      <aside class="summary" id="summary" hidden>
+        <div class="summary__stats">
+          <div class="stat">
+            <span class="stat__value" id="stat-original">—</span>
+            <span class="stat__label">Original</span>
+          </div>
+          <div class="stat stat--arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="stat-compressed">—</span>
+            <span class="stat__label">Compressed</span>
+          </div>
+          <div class="stat stat--saving">
+            <span class="stat__value" id="stat-saved">—</span>
+            <span class="stat__label">Saved</span>
+          </div>
+        </div>
+        <div class="summary__actions">
+          <button type="button" class="btn btn--ghost" id="clear-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            </svg>
+            <span>Clear all</span>
+          </button>
+          <button type="button" class="btn btn--primary" id="download-zip">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span id="download-label">Download all</span>
+          </button>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ─── COMPARE VIEW ───────────────────────────────────────── -->
+    <section class="view view--compare" data-view-name="compare">
+      <header class="compare__header">
+        <button type="button" class="btn btn--ghost" id="compare-back">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          <span>Back to list</span>
+        </button>
+
+        <div class="compare__title">
+          <p class="compare__filename" id="compare-filename">image.png</p>
+          <p class="compare__meta" id="compare-meta">—</p>
+        </div>
+
+        <button type="button" class="btn btn--primary" id="compare-download" disabled>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Download</span>
+        </button>
+      </header>
+
+      <div class="compare__layout">
+        <div class="compare__viewport" id="compare-viewport">
+          <div class="compare__stage" id="compare-stage">
+            <div class="compare__pane compare__pane--orig" id="compare-pane-orig" aria-label="Original image">
+              <img id="compare-img-orig" alt="" />
+              <span class="compare__tag compare__tag--orig">Original</span>
+            </div>
+            <div class="compare__pane compare__pane--comp" id="compare-pane-comp" aria-label="Compressed image">
+              <img id="compare-img-comp" alt="" />
+              <span class="compare__tag compare__tag--comp" id="compare-tag-comp">Compressed</span>
+            </div>
+
+            <div class="compare__divider" id="compare-divider" role="slider" aria-label="Compare position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0">
+              <div class="compare__handle" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="compare__busy" id="compare-busy" hidden aria-hidden="true">
+              <span class="spinner"></span>
+              <span>Compressing…</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="compare__panel">
+          <section class="panel-section">
+            <h2 class="panel-section__title">Format</h2>
+            <div class="pill-group pill-group--grid" role="radiogroup" aria-label="Compare format">
+              <button type="button" class="pill is-active" data-cmp-format="auto" role="radio" aria-checked="true">Auto</button>
+              <button type="button" class="pill" data-cmp-format="webp" role="radio" aria-checked="false">WebP</button>
+              <button type="button" class="pill" data-cmp-format="avif" role="radio" aria-checked="false">AVIF</button>
+              <button type="button" class="pill" data-cmp-format="jpeg" role="radio" aria-checked="false">JPEG</button>
+              <button type="button" class="pill" data-cmp-format="png" role="radio" aria-checked="false">PNG</button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="panel-section__head">
+              <h2 class="panel-section__title">Quality</h2>
+              <span class="panel-section__value" id="cmp-quality-value">50</span>
+            </div>
+            <input id="cmp-quality-range" class="range" type="range" min="1" max="100" value="50" step="1" />
+            <p class="panel-section__hint">Auto-capped to 85 (no alpha) or 90 (with alpha) for best results.</p>
+          </section>
+
+          <section class="panel-section">
+            <h2 class="panel-section__title">Max width</h2>
+            <div class="width-stack">
+              <select id="cmp-width-select" class="select">
+                <option value="9999" selected>Original</option>
+                <option value="2400">2400 px</option>
+                <option value="1600">1600 px</option>
+                <option value="1200">1200 px</option>
+                <option value="800">800 px</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="panel-section panel-section--diff">
+            <h2 class="panel-section__title">Compare</h2>
+            <div class="diff-grid">
+              <div class="diff-row">
+                <span class="diff-row__label">Original</span>
+                <span class="diff-row__value" id="cmp-stat-orig">—</span>
+              </div>
+              <div class="diff-row">
+                <span class="diff-row__label">Compressed</span>
+                <span class="diff-row__value" id="cmp-stat-comp">—</span>
+              </div>
+              <div class="diff-row diff-row--accent">
+                <span class="diff-row__label">Saved</span>
+                <span class="diff-row__value" id="cmp-stat-saved">—</span>
+              </div>
+              <div class="diff-row">
+                <span class="diff-row__label">Dimensions</span>
+                <span class="diff-row__value" id="cmp-stat-dim">—</span>
+              </div>
+              <div class="diff-row">
+                <span class="diff-row__label">Output type</span>
+                <span class="diff-row__value" id="cmp-stat-mime">—</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section panel-section--zoom">
+            <div class="panel-section__head">
+              <h2 class="panel-section__title">Zoom</h2>
+              <span class="panel-section__value" id="cmp-zoom-value">100%</span>
+            </div>
+            <div class="zoom-controls">
+              <button type="button" class="btn btn--ghost btn--icon" id="cmp-zoom-out" aria-label="Zoom out">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <input id="cmp-zoom-range" class="range" type="range" min="25" max="400" value="100" step="5" aria-label="Zoom" />
+              <button type="button" class="btn btn--ghost btn--icon" id="cmp-zoom-in" aria-label="Zoom in">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button type="button" class="btn btn--ghost btn--icon" id="cmp-zoom-fit" aria-label="Fit to screen" title="Fit">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h6"/><path d="M4 4v6"/><path d="M20 20h-6"/><path d="M20 20v-6"/>
+                </svg>
+              </button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Runs entirely in your browser, files never leave your machine</span>
+    <span class="dot" aria-hidden="true"></span>
+    <span id="footer-formats">WebP · JPEG · PNG</span>
+  </footer>
+
+  <script src="vendor/fflate.umd.js"></script>
+  <script src="vendor/pako.min.js"></script>
+  <script src="vendor/UPNG.js"></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

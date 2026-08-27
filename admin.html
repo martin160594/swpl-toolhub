@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - SWPL ToolHub</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#f6f6f7" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2317171a'/%3E%3Cg fill='%23fb923c'%3E%3Crect x='12' y='12' width='17' height='17' rx='4.5'/%3E%3Crect x='35' y='12' width='17' height='17' rx='4.5'/%3E%3Crect x='12' y='35' width='17' height='17' rx='4.5'/%3E%3Crect x='35' y='35' width='17' height='17' rx='8.5'/%3E%3C/g%3E%3C/svg%3E" />
+
+  <script src="data/site-config.js"></script>
+  <script src="data/tools.js"></script>
+  <script src="assets/icons.js"></script>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("swpl.theme");
+        var mode = saved;
+        if (mode !== "light" && mode !== "dark") {
+          var cfg = window.SWPL_CONFIG || {};
+          mode = cfg.theme && (cfg.theme.defaultMode === "light" || cfg.theme.defaultMode === "dark")
+            ? cfg.theme.defaultMode
+            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        }
+        document.documentElement.setAttribute("data-theme", mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/site.css" />
+  <link rel="stylesheet" href="assets/admin.css" />
+</head>
+<body class="admin-body" data-anim="on">
+
+  <!-- ============ Password gate ============ -->
+  <div class="gate" id="gate">
+    <form class="gate-card" id="gate-form" autocomplete="off">
+      <span class="brand-mark gate-mark" aria-hidden="true"><svg class="icn" viewBox="0 0 64 64" fill="currentColor"><rect x="8" y="8" width="21" height="21" rx="5.5"/><rect x="35" y="8" width="21" height="21" rx="5.5"/><rect x="8" y="35" width="21" height="21" rx="5.5"/><rect x="35" y="35" width="21" height="21" rx="10.5"/></svg></span>
+      <h1>Admin console</h1>
+      <p class="gate-sub">Enter the admin password to manage SWPL ToolHub.</p>
+      <div class="gate-field">
+        <input type="password" id="gate-pass" placeholder="Password" autocomplete="current-password" required autofocus />
+        <button type="button" class="gate-eye" id="gate-eye" aria-label="Show password" aria-pressed="false"></button>
+      </div>
+      <p class="gate-error" id="gate-error" role="alert" hidden></p>
+      <button class="btn btn-primary gate-submit" type="submit" id="gate-submit">Unlock</button>
+      <a class="gate-back" href="index.html">Back to ToolHub</a>
+    </form>
+  </div>
+
+  <!-- ============ Admin app ============ -->
+  <div class="admin" id="admin-app" hidden>
+    <header class="admin-topbar">
+      <a class="brand" href="index.html" title="Back to ToolHub">
+        <span class="brand-mark" aria-hidden="true"><svg class="icn" viewBox="0 0 64 64" fill="currentColor"><rect x="8" y="8" width="21" height="21" rx="5.5"/><rect x="35" y="8" width="21" height="21" rx="5.5"/><rect x="8" y="35" width="21" height="21" rx="5.5"/><rect x="35" y="35" width="21" height="21" rx="10.5"/></svg></span>
+        <span class="brand-word">Admin <em>console</em></span>
+      </a>
+      <span class="draft-status" id="draft-status" role="status"></span>
+      <div class="admin-topbar-actions">
+        <button type="button" class="iconbtn theme-toggle" id="theme-toggle" aria-label="Toggle light and dark theme" title="Toggle theme">
+          <svg class="icn icn-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icn icn-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        </button>
+        <button type="button" class="btn btn-ghost" id="btn-discard">Discard draft</button>
+        <button type="button" class="btn btn-secondary" id="btn-export-quick">Export files</button>
+        <button type="button" class="btn btn-primary" id="btn-publish-quick">Publish</button>
+        <button type="button" class="iconbtn" id="btn-lock" aria-label="Lock admin console" title="Lock"></button>
+      </div>
+    </header>
+
+    <div class="admin-shell">
+      <nav class="admin-nav" aria-label="Admin sections" id="admin-nav">
+        <button type="button" class="nav-item is-active" data-panel="site">Site</button>
+        <button type="button" class="nav-item" data-panel="appearance">Appearance</button>
+        <button type="button" class="nav-item" data-panel="layout">Layout</button>
+        <button type="button" class="nav-item" data-panel="tools">Tools</button>
+        <button type="button" class="nav-item" data-panel="categories">Categories</button>
+        <button type="button" class="nav-item" data-panel="github">GitHub</button>
+        <button type="button" class="nav-item" data-panel="data">Data</button>
+        <button type="button" class="nav-item" data-panel="security">Security</button>
+      </nav>
+
+      <main class="admin-main" id="admin-main">
+
+        <!-- ============ Site ============ -->
+        <section class="panel is-active" data-panel-id="site">
+          <h2 class="panel-title">Site identity</h2>
+          <p class="panel-sub">Names and copy shown on the public page.</p>
+
+          <div class="field">
+            <label for="f-site-title">Site title</label>
+            <input id="f-site-title" type="text" data-bind="site.title" />
+            <p class="hint">Browser tab, hero heading and search results.</p>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-logo-text">Wordmark, left part</label>
+              <input id="f-logo-text" type="text" data-bind="site.logoText" />
+            </div>
+            <div class="field">
+              <label for="f-logo-accent">Wordmark, accent part</label>
+              <input id="f-logo-accent" type="text" data-bind="site.logoAccent" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-tagline">Tagline</label>
+            <textarea id="f-tagline" rows="2" data-bind="site.tagline"></textarea>
+            <p class="hint">One or two short sentences under the hero title.</p>
+          </div>
+          <div class="field">
+            <label for="f-meta-desc">Meta description</label>
+            <input id="f-meta-desc" type="text" data-bind="site.description" />
+          </div>
+          <div class="field">
+            <label for="f-footer-text">Footer text</label>
+            <input id="f-footer-text" type="text" data-bind="site.footerText" />
+          </div>
+
+          <h3 class="panel-heading">Visible sections</h3>
+          <div class="switch-grid">
+            <label class="switch"><input type="checkbox" data-bind="site.showHero" data-type="bool" /><span class="switch-track"></span>Hero heading</label>
+            <label class="switch"><input type="checkbox" data-bind="site.showSearch" data-type="bool" /><span class="switch-track"></span>Search bar</label>
+            <label class="switch"><input type="checkbox" data-bind="site.showCategories" data-type="bool" /><span class="switch-track"></span>Category filter</label>
+            <label class="switch"><input type="checkbox" data-bind="site.showFooter" data-type="bool" /><span class="switch-track"></span>Footer</label>
+            <label class="switch"><input type="checkbox" data-bind="site.showAdminLink" data-type="bool" /><span class="switch-track"></span>Admin links</label>
+          </div>
+        </section>
+
+        <!-- ============ Appearance ============ -->
+        <section class="panel" data-panel-id="appearance">
+          <h2 class="panel-title">Appearance</h2>
+          <p class="panel-sub">Theme, accent, typography and surface styling. Everything applies live to the preview.</p>
+
+          <div class="field">
+            <label>Accent color</label>
+            <div class="accent-row" id="accent-row"></div>
+            <div class="accent-custom">
+              <input type="color" id="f-accent-custom" value="#c2410c" aria-label="Custom accent color" />
+              <span>Custom</span>
+              <code id="accent-custom-hex">#c2410c</code>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-default-mode">Default theme</label>
+              <select id="f-default-mode" data-bind="theme.defaultMode">
+                <option value="system">Follow system</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+              <p class="hint">Visitors can always toggle. Their choice is remembered.</p>
+            </div>
+            <div class="field">
+              <label for="f-font">Font pairing</label>
+              <select id="f-font" data-bind="theme.font">
+                <option value="grotesk">Space Grotesk + Geist</option>
+                <option value="outfit">Outfit + Inter Tight</option>
+                <option value="plex">IBM Plex</option>
+                <option value="system">System UI</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-radius">Corner radius <span class="range-val" id="radius-val">14px</span></label>
+              <input id="f-radius" type="range" min="0" max="24" step="1" data-bind="theme.radius" data-type="int" />
+            </div>
+            <div class="field">
+              <label for="f-density">Density</label>
+              <select id="f-density" data-bind="theme.density">
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-card-style">Card style</label>
+              <select id="f-card-style" data-bind="theme.cardStyle">
+                <option value="elevated">Elevated</option>
+                <option value="outline">Outline</option>
+                <option value="glass">Glass</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-hero-style">Backdrop</label>
+              <select id="f-hero-style" data-bind="theme.heroStyle">
+                <option value="aurora">Accent glow</option>
+                <option value="plain">Plain</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="switch-grid">
+            <label class="switch"><input type="checkbox" data-bind="theme.bgPattern" data-type="bool" /><span class="switch-track"></span>Dot pattern backdrop</label>
+            <label class="switch"><input type="checkbox" data-bind="theme.animations" data-type="bool" /><span class="switch-track"></span>Animations</label>
+          </div>
+
+          <div class="field">
+            <label for="f-custom-css">Custom CSS</label>
+            <textarea id="f-custom-css" rows="7" class="mono" data-bind="theme.customCSS" spellcheck="false" placeholder=".card { border-width: 2px; }"></textarea>
+            <p class="hint">Injected last on the public page. Full control, no guardrails.</p>
+          </div>
+        </section>
+
+        <!-- ============ Layout ============ -->
+        <section class="panel" data-panel-id="layout">
+          <h2 class="panel-title">Grid layout</h2>
+          <p class="panel-sub">How the tool cards are arranged and what each card shows.</p>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-columns">Columns</label>
+              <select id="f-columns" data-bind="layout.columns">
+                <option value="auto">Auto fit</option>
+                <option value="2">2 columns</option>
+                <option value="3">3 columns</option>
+                <option value="4">4 columns</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-sort">Order</label>
+              <select id="f-sort" data-bind="layout.sort">
+                <option value="manual">Manual (drag in Tools)</option>
+                <option value="name">Alphabetical</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="switch-grid">
+            <label class="switch"><input type="checkbox" data-bind="layout.groupByCategory" data-type="bool" /><span class="switch-track"></span>Group by category</label>
+            <label class="switch"><input type="checkbox" data-bind="layout.showBadges" data-type="bool" /><span class="switch-track"></span>Platform badges</label>
+            <label class="switch"><input type="checkbox" data-bind="layout.showVersions" data-type="bool" /><span class="switch-track"></span>Version numbers</label>
+            <label class="switch"><input type="checkbox" data-bind="layout.showTags" data-type="bool" /><span class="switch-track"></span>Tags</label>
+          </div>
+        </section>
+
+        <!-- ============ Tools ============ -->
+        <section class="panel" data-panel-id="tools">
+          <div class="panel-head-row">
+            <div>
+              <h2 class="panel-title">Tools</h2>
+              <p class="panel-sub">Drag to reorder. Hidden tools stay here but leave the public page.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-add-tool">Add tool</button>
+          </div>
+          <div class="tool-list" id="tool-list"></div>
+        </section>
+
+        <!-- ============ Categories ============ -->
+        <section class="panel" data-panel-id="categories">
+          <div class="panel-head-row">
+            <div>
+              <h2 class="panel-title">Categories</h2>
+              <p class="panel-sub">Filter chips on the public page. A tool joins a category by its category id.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-add-cat">Add category</button>
+          </div>
+          <div class="cat-list" id="cat-list"></div>
+        </section>
+
+        <!-- ============ GitHub ============ -->
+        <section class="panel" data-panel-id="github">
+          <h2 class="panel-title">GitHub publishing</h2>
+          <p class="panel-sub">Publish commits <code>data/site-config.js</code> and <code>data/tools.js</code> straight to your repo. GitHub Pages redeploys automatically.</p>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-gh-owner">Owner</label>
+              <input id="f-gh-owner" type="text" data-bind="github.owner" placeholder="your-github-user" spellcheck="false" />
+            </div>
+            <div class="field">
+              <label for="f-gh-repo">Repository</label>
+              <input id="f-gh-repo" type="text" data-bind="github.repo" placeholder="swpl-toolhub" spellcheck="false" />
+            </div>
+            <div class="field field-slim">
+              <label for="f-gh-branch">Branch</label>
+              <input id="f-gh-branch" type="text" data-bind="github.branch" placeholder="main" spellcheck="false" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-gh-token">Personal access token</label>
+            <div class="token-field">
+              <input id="f-gh-token" type="password" placeholder="github_pat_… or ghp_…" spellcheck="false" autocomplete="off" />
+              <button type="button" class="gate-eye" id="gh-token-eye" aria-label="Show token" aria-pressed="false"></button>
+            </div>
+            <p class="hint">Needs <strong>Contents: read and write</strong> on this repo (fine-grained) or the <code>repo</code> scope (classic). Stored only in this browser's localStorage, never exported or committed.</p>
+          </div>
+
+          <div class="field">
+            <label for="f-gh-message">Commit message</label>
+            <input id="f-gh-message" type="text" value="Update ToolHub content" />
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-secondary" id="btn-gh-test">Test connection</button>
+            <button type="button" class="btn btn-primary" id="btn-gh-publish">Publish draft to GitHub</button>
+          </div>
+          <div class="gh-status" id="gh-status" role="status"></div>
+        </section>
+
+        <!-- ============ Data ============ -->
+        <section class="panel" data-panel-id="data">
+          <h2 class="panel-title">Data</h2>
+          <p class="panel-sub">Export the draft as files to commit manually, or move content between machines.</p>
+
+          <h3 class="panel-heading">Export</h3>
+          <div class="btn-row">
+            <button type="button" class="btn btn-secondary" id="btn-dl-config">Download site-config.js</button>
+            <button type="button" class="btn btn-secondary" id="btn-dl-tools">Download tools.js</button>
+            <button type="button" class="btn btn-secondary" id="btn-dl-bundle">Download bundle (.json)</button>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="btn-copy-config">Copy site-config.js</button>
+            <button type="button" class="btn btn-ghost" id="btn-copy-tools">Copy tools.js</button>
+          </div>
+          <p class="hint">Manual flow: download both files, replace them in the repo's <code>data/</code> folder, commit and push. Pages redeploys on its own.</p>
+
+          <h3 class="panel-heading">Import</h3>
+          <div class="btn-row">
+            <button type="button" class="btn btn-secondary" id="btn-import">Import bundle (.json)</button>
+            <input type="file" id="import-file" accept=".json,application/json" hidden />
+          </div>
+          <p class="hint">Replaces the current draft with the bundle's content. Nothing is published until you export or push.</p>
+
+          <h3 class="panel-heading danger-heading">Danger zone</h3>
+          <div class="btn-row">
+            <button type="button" class="btn btn-danger" id="btn-reset-draft">Reset draft to published files</button>
+          </div>
+        </section>
+
+        <!-- ============ Security ============ -->
+        <section class="panel" data-panel-id="security">
+          <h2 class="panel-title">Security</h2>
+          <p class="panel-sub">The admin gate is a client-side lock: it keeps the console out of casual reach, but this is a static site, so the data files themselves are readable by anyone who can open the repo. Keep secrets out of tool descriptions.</p>
+
+          <h3 class="panel-heading">Change admin password</h3>
+          <div class="field">
+            <label for="f-pass-current">Current password</label>
+            <input id="f-pass-current" type="password" autocomplete="current-password" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-pass-new">New password</label>
+              <input id="f-pass-new" type="password" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label for="f-pass-new2">Repeat new password</label>
+              <input id="f-pass-new2" type="password" autocomplete="new-password" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" id="btn-change-pass">Update password</button>
+          </div>
+          <p class="gh-status" id="pass-status" role="status"></p>
+          <p class="hint">The new password lands in the draft config. Publish (or export and commit) for it to take effect on the live site.</p>
+        </section>
+      </main>
+
+      <!-- ============ Live preview ============ -->
+      <aside class="admin-preview" id="admin-preview">
+        <div class="preview-head">
+          <span class="preview-title">Live preview</span>
+          <div class="preview-actions">
+            <button type="button" class="seg-btn is-active" id="pv-desktop" title="Desktop width">Desktop</button>
+            <button type="button" class="seg-btn" id="pv-mobile" title="Mobile width">Mobile</button>
+            <button type="button" class="iconbtn iconbtn-sm" id="pv-open" title="Open preview in a new tab" aria-label="Open preview in a new tab"></button>
+            <button type="button" class="iconbtn iconbtn-sm" id="pv-reload" title="Reload preview" aria-label="Reload preview"></button>
+          </div>
+        </div>
+        <div class="preview-frame-wrap" id="preview-wrap">
+          <iframe id="preview-frame" src="index.html?draft=1" title="Site preview"></iframe>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============ Tool editor dialog ============ -->
+  <dialog class="editor-dialog" id="tool-editor">
+    <form method="dialog" class="editor-form" id="tool-editor-form">
+      <div class="editor-head">
+        <h2 id="tool-editor-title">Edit tool</h2>
+        <button type="button" class="dlg-close" id="tool-editor-close" aria-label="Close"></button>
+      </div>
+
+      <div class="editor-grid">
+        <div class="field">
+          <label for="t-name">Name</label>
+          <input id="t-name" type="text" required />
+        </div>
+        <div class="field">
+          <label for="t-id">Id <span class="hint-inline">unique slug</span></label>
+          <input id="t-id" type="text" pattern="[a-z0-9-]+" spellcheck="false" required />
+        </div>
+
+        <div class="field field-full">
+          <label for="t-tagline">Tagline <span class="hint-inline">one line on the card</span></label>
+          <input id="t-tagline" type="text" />
+        </div>
+        <div class="field field-full">
+          <label for="t-desc">Description <span class="hint-inline">shown in the dialog</span></label>
+          <textarea id="t-desc" rows="3"></textarea>
+        </div>
+
+        <div class="field field-full">
+          <label>Icon</label>
+          <div class="icon-mode-row">
+            <select id="t-icon-mode" aria-label="Icon type">
+              <option value="icon">Icon library</option>
+              <option value="emoji">Emoji</option>
+              <option value="img">Image URL</option>
+            </select>
+            <input id="t-icon-emoji" type="text" maxlength="4" placeholder="🧰" hidden />
+            <input id="t-icon-img" type="url" placeholder="https://…/icon.png" hidden />
+            <span class="icon-preview" id="t-icon-preview" aria-hidden="true"></span>
+          </div>
+          <div class="icon-grid" id="t-icon-grid"></div>
+        </div>
+
+        <div class="field">
+          <label for="t-category">Category</label>
+          <select id="t-category"></select>
+        </div>
+        <div class="field">
+          <label for="t-platform">Platform</label>
+          <select id="t-platform">
+            <option value="web">Web, runs in browser</option>
+            <option value="windows">Windows</option>
+            <option value="">Unspecified</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="t-kind">Open behaviour</label>
+          <select id="t-kind">
+            <option value="embedded">Embedded, same tab</option>
+            <option value="external">External link, new tab</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="t-version">Version <span class="hint-inline">optional</span></label>
+          <input id="t-version" type="text" placeholder="6.9.0" spellcheck="false" />
+        </div>
+
+        <div class="field field-full">
+          <label for="t-open-url">Open URL</label>
+          <input id="t-open-url" type="text" placeholder="tools/my-tool/index.html or https://…" spellcheck="false" />
+        </div>
+        <div class="field field-full">
+          <label for="t-download-url">Download URL <span class="hint-inline">empty hides the button</span></label>
+          <input id="t-download-url" type="text" placeholder="downloads/tool.zip or https://…" spellcheck="false" />
+        </div>
+        <div class="field field-full">
+          <label for="t-repo-url">Source URL <span class="hint-inline">optional</span></label>
+          <input id="t-repo-url" type="text" placeholder="https://github.com/…" spellcheck="false" />
+        </div>
+
+        <div class="field field-full">
+          <label for="t-tags">Tags <span class="hint-inline">comma separated</span></label>
+          <input id="t-tags" type="text" placeholder="XML, Launcher" />
+        </div>
+
+        <div class="switch-grid field-full">
+          <label class="switch"><input type="checkbox" id="t-featured" /><span class="switch-track"></span>Featured</label>
+          <label class="switch"><input type="checkbox" id="t-hidden" /><span class="switch-track"></span>Hidden</label>
+        </div>
+      </div>
+
+      <p class="gh-status" id="tool-editor-error" role="alert"></p>
+      <div class="editor-actions">
+        <button type="button" class="btn btn-ghost" id="tool-editor-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="tool-editor-save">Save tool</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ============ Confirm dialog ============ -->
+  <dialog class="confirm-dialog" id="confirm-dlg">
+    <div class="confirm-inner">
+      <h2 id="confirm-title">Are you sure?</h2>
+      <p id="confirm-text"></p>
+      <div class="editor-actions">
+        <button type="button" class="btn btn-ghost" id="confirm-no">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirm-yes">Confirm</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="assets/site.js"></script>
+  <script src="assets/admin.js"></script>
+</body>
+</html>

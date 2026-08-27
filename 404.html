@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Not found - SWPL ToolHub</title>
+  <meta name="robots" content="noindex" />
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("swpl.theme");
+        var mode = (saved === "light" || saved === "dark") ? saved
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", mode);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root { color-scheme: light; --bg: #f6f6f7; --text: #17171a; --muted: #75757e; --accent: #c2410c; --surface: #ffffff; --border: rgba(23,23,26,.12); }
+    html[data-theme="dark"] { color-scheme: dark; --bg: #0e0e10; --text: #f1f1f3; --muted: #85858f; --accent: #fb923c; --surface: #161618; --border: rgba(241,241,243,.12); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+    main { text-align: center; padding: 2rem; }
+    .code { font-size: 4.5rem; font-weight: 700; letter-spacing: -0.03em; color: var(--accent); margin: 0; line-height: 1; }
+    p { color: var(--muted); margin: 0.9rem 0 1.6rem; }
+    a { display: inline-block; padding: 0.65rem 1.3rem; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 600; }
+    a:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="code">404</p>
+    <p>This page does not exist on SWPL ToolHub.</p>
+    <a href="./">Back to the hub</a>
+  </main>
+</body>
+</html>

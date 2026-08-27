@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layout Editor - SWPL ToolHub</title>
+    <meta name="description" content="Visual grid editor for Android launcher XML layout files. Edit application order and default workspace configurations." />
+    <meta name="theme-color" content="#f4f4f6" data-light="#f4f4f6" data-dark="#0e0e10" />
+    <link rel="icon" type="image/svg+xml" href="assets/icon/favicon-tab.svg?v=20260401" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icon/favicon-tab.png?v=20260401" />
+    <link rel="apple-touch-icon" href="assets/icon/favicon-tab.png?v=20260401" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <script src="../../data/site-config.js"></script>
+    <script src="../../assets/tool-bridge.js"></script>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="layout-tool-enhancements.css?v=20260825a" />
+    <link rel="stylesheet" href="../../assets/tool-bridge.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="main-content">
+        <aside class="tool-panel">
+          <div class="layout-controls">
+            <div class="tool-panel-header">
+              <div class="tool-panel-header-copy">
+                <a class="hub-back-link" href="../../index.html">← Tool Hub</a>
+                <p class="tool-panel-kicker">Toolbox</p>
+                <h2>Layout Controls</h2>
+              </div>
+              <div class="tool-panel-header-side">
+                <button type="button" class="swpl-theme-toggle" data-swpl-theme-toggle aria-label="Toggle light and dark theme" title="Toggle theme">
+                  <svg class="swpl-icon-moon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  <svg class="swpl-icon-sun" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                </button>
+                <details class="tool-switcher">
+                  <summary>Choose tool</summary>
+                  <nav class="tool-switcher__menu" aria-label="Choose tool">
+                    <a href="../../index.html">Tool Hub</a>
+                    <a href="../layout-editor/index.html" aria-current="page">Layout Editor</a>
+                    <a href="../cf-helper/index.html">CF Helper</a>
+                    <a href="../image-compressor/index.html">Image Compression</a>
+                  </nav>
+                </details>
+              </div>
+            </div>
+
+            <div class="tool-section">
+              <p class="tool-section-label">Mode</p>
+              <div class="tool-stack">
+                <div class="field-group">
+                  <label for="mode-select">Mode</label>
+                  <select id="mode-select">
+                    <option value="application-order">Application Order</option>
+                    <option value="default-workspace">Default Workspace</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="layout-select">Layout</label>
+                  <select id="layout-select">
+                    <option value="mobile">Mobile (4x6)</option>
+                    <option value="tablet-8x6">Tablet (8x6)</option>
+                    <option value="fold-6x6">Fold (6x6)</option>
+                    <option value="tablet-6x8">Tablet (6x8)</option>
+                    <option value="tablet-6x10">Tablet (6x10)</option>
+                    <option value="custom">Custom grid</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="tool-section">
+              <p class="tool-section-label">Grid</p>
+              <div class="tool-stack">
+                <div id="custom-grid-panel" class="custom-grid-panel" style="display: none;">
+                  <div class="field-group field-group-compact">
+                    <label for="custom-cols">Columns</label>
+                    <input type="number" id="custom-cols" min="2" max="12" value="4" />
+                  </div>
+                  <div class="field-group field-group-compact">
+                    <label for="custom-home-rows">Home rows</label>
+                    <input type="number" id="custom-home-rows" min="1" max="12" value="6" />
+                  </div>
+                  <button type="button" id="apply-custom-grid" class="btn-accent">Apply Grid</button>
+                </div>
+
+                <div class="grid-toggle-wrapper">
+                  <input type="checkbox" id="grid-lines-toggle" class="toggle-switch" checked />
+                  <label for="grid-lines-toggle">Grid Lines</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="tool-section">
+              <p class="tool-section-label">Actions</p>
+              <div class="tool-actions">
+                <input
+                  type="file"
+                  id="xml-file-input"
+                  accept=".xml"
+                  style="display: none"
+                />
+                <button id="load-xml-btn" class="btn-neutral">Load XML</button>
+                <button id="paste-xml-btn" class="btn-neutral">Paste XML</button>
+                <button id="add-app-btn" class="btn-neutral">Add Item</button>
+                <button id="save-changes-btn" class="btn-success" disabled>Save</button>
+                <button id="reset-layout-btn" class="btn-ghost" disabled>Reset</button>
+                <button id="compare-xml-btn" class="btn-compare">Compare XML</button>
+                <button id="export-xml-btn" class="btn-accent tool-action-wide">Export XML</button>
+              </div>
+            </div>
+
+            <div id="cart-panel" class="tool-section tool-section-cart" aria-label="Cart tray">
+              <div class="tool-section-heading">
+                <p class="tool-section-label">Cart</p>
+                <span id="cart-count-pill" class="tool-section-badge">0 items</span>
+              </div>
+              <div id="cart-drop-zone" class="cart-drop-zone">
+                Drop app/widget here
+              </div>
+              <div id="cart-items" class="cart-items"></div>
+            </div>
+
+
+            <div class="tool-panel-footer">
+              <button id="toggle-xml-btn" class="btn-dark">Show XML</button>
+              <span class="status-pill" id="header-state-pill" aria-live="polite">Saved</span>
+            </div>
+            <div class="tool-panel-help">
+              <button type="button" id="guide-btn" class="help-toolbox-btn guide-toolbox-btn" aria-label="UI usage guide">Guide</button>
+              <button type="button" id="request-board-btn" class="help-toolbox-btn request-toolbox-btn" aria-label="Public request board" hidden>
+                Requests
+                <span id="request-board-count" class="toolbox-counter">0</span>
+              </button>
+              <button type="button" id="access-control-btn" class="help-toolbox-btn access-toolbox-btn" aria-label="Access control" hidden>
+                Access
+                <span id="access-control-count" class="toolbox-counter">0</span>
+              </button>
+              <button type="button" id="activity-btn" class="help-toolbox-btn activity-toolbox-btn" aria-label="Server activity" hidden>
+                Activity
+                <span id="activity-count" class="toolbox-counter">0</span>
+              </button>
+              <button type="button" id="help-btn" class="help-toolbox-btn" aria-label="Help and contact">Help</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="grid-panel">
+          <div class="preview-panel-header">
+            <div class="preview-panel-copy">
+              <p class="preview-panel-kicker">Preview</p>
+              <h2>Layout Canvas</h2>
+            </div>
+            <div class="preview-panel-tools">
+              <span class="stage-inline-meta" id="device-grid-readout">4x6</span>
+              <div class="canvas-page-mode" role="group" aria-label="Canvas page view">
+                <button type="button" id="canvas-page-mode-auto" class="canvas-page-mode-btn is-active" data-canvas-page-mode="auto">Auto</button>
+                <button type="button" id="canvas-page-mode-one" class="canvas-page-mode-btn" data-canvas-page-mode="one">1 page</button>
+                <button type="button" id="canvas-page-mode-two" class="canvas-page-mode-btn" data-canvas-page-mode="two">2 pages</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="workspace-shell">
+            <div class="workspace-stage">
+              <div class="device-shell">
+                <div class="device-frame">
+                  <div class="layout-canvas-axes">
+                    <div class="canvas-axis-corner" title="Tọa độ ô (0,0 góc trên-trái)">
+                      <span class="canvas-axis-corner-y">y</span>
+                      <span class="canvas-axis-corner-x">x</span>
+                    </div>
+                    <div id="canvas-axis-x" class="canvas-axis canvas-axis--x"></div>
+                    <div id="canvas-axis-y" class="canvas-axis canvas-axis--y"></div>
+                    <div class="layout-canvas-grid-slot">
+                      <div id="app-grid" class="app-grid"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pagination">
+            <button id="prev-page-btn" disabled>Previous</button>
+            <span id="page-info">1 / 1</span>
+            <button id="next-page-btn">Next</button>
+          </div>
+        </section>
+
+        <aside class="xml-panel" id="xml-panel">
+          <div class="xml-panel-header">
+            <h2>Current XML</h2>
+            <span id="xml-editor-state" class="xml-editor-state is-synced">Synced</span>
+          </div>
+          <div class="xml-controls">
+            <button id="refresh-xml-btn">Reset XML</button>
+            <button id="save-xml-btn">Save XML</button>
+            <button id="copy-xml-btn">Copy XML</button>
+          </div>
+          <textarea id="xml-content" class="xml-content xml-editor" spellcheck="false" wrap="off" aria-label="XML editor"></textarea>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Add App Modal -->
+    <div id="add-app-modal" class="modal">
+      <div class="modal-content">
+        <button type="button" class="close add-app-close" aria-label="Close">&times;</button>
+        <h2 id="add-app-modal-title">Add App</h2>
+        <div id="add-context-hint" class="add-context-hint" style="display: none;"></div>
+
+        <div class="add-app-modal-body">
+        <div class="form-group">
+          <label for="item-type">Type *</label>
+          <select id="item-type" required>
+            <option value="app">App</option>
+            <option value="folder">Folder</option>
+            <option value="widget">Widget</option>
+          </select>
+        </div>
+
+        <div class="form-group searchable-only" id="item-search-group">
+          <label for="item-search">Search Local App Data</label>
+          <input type="text" id="item-search" placeholder="Search local app data by comment or package name">
+          <div id="item-search-results" class="search-results"></div>
+        </div>
+        
+        <!-- Folder Name (visible only for folders) -->
+        <div class="form-group" id="folder-name-group" style="display: none;">
+          <label for="folder-name">Folder Name *</label>
+          <input type="text" id="folder-name" placeholder="Enter folder name">
+        </div>
+        
+        <!-- Package Name (hidden for folders) -->
+        <div class="form-group" id="package-name-group">
+          <label for="package-name">Package Name *</label>
+          <input type="text" id="package-name" placeholder="com.example.app">
+        </div>
+        
+        <!-- Class Name (hidden for folders) -->
+        <div class="form-group" id="class-name-group">
+          <label for="class-name">Class Name *</label>
+          <input type="text" id="class-name" placeholder="com.example.app.MainActivity">
+        </div>
+        
+        <!-- Widget Spans (visible only for widgets) -->
+        <div class="form-group widget-only" id="widget-spans-group" style="display: none;">
+          <div class="row">
+            <div class="col">
+              <label for="span-x">Span X *</label>
+              <input type="number" id="span-x" min="1" max="4" value="2">
+            </div>
+            <div class="col">
+              <label for="span-y">Span Y *</label>
+              <input type="number" id="span-y" min="1" max="4" value="1">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Position (visible only for Default Workspace mode) -->
+        <div class="form-group workspace-only" id="position-group" style="display: none;">
+          <label>Position *</label>
+          <div class="row">
+            <div class="col">
+              <label for="pos-x">X</label>
+              <input type="number" id="pos-x" min="0" max="3" value="0">
+            </div>
+            <div class="col">
+              <label for="pos-y">Y</label>
+              <input type="number" id="pos-y" min="0" max="5" value="0">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Screen -->
+        <div class="form-group" id="item-screen-group">
+          <label for="item-screen">Screen</label>
+          <input type="number" id="item-screen" value="0" min="0">
+        </div>
+        
+        <!-- Comment -->
+        <div class="form-group">
+          <label for="item-comment">Comment</label>
+          <input type="text" id="item-comment" placeholder="Optional comment">
+        </div>
+        
+        <!-- In Folder (for Application Order mode) -->
+        <div class="form-group apporder-only" id="in-folder-group">
+          <label for="in-folder">In Folder</label>
+          <select id="in-folder">
+            <option value="">No Folder</option>
+            <!-- Existing folders populated via JS -->
+          </select>
+        </div>
+        </div>
+
+        <div class="modal-buttons add-app-modal-footer">
+          <button type="button" id="cancel-add-app">Cancel</button>
+          <button type="button" id="confirm-add-app" class="primary">Add App</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+      <div class="context-menu-item context-menu-item-add" data-action="add">Add Here</div>
+      <div class="context-menu-item context-menu-item-edit" data-action="edit">Edit Item</div>
+      <div class="context-menu-item context-menu-item-move" data-action="move-page">Move to Page...</div>
+      <div class="context-menu-item context-menu-item-cart" data-action="cart">Send to Cart</div>
+      <div class="context-menu-item context-menu-item-remove" data-action="remove">Remove Item</div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirm-dialog" class="modal">
+      <div class="modal-content dialog-content">
+        <h3>Confirm Removal</h3>
+        <p id="confirm-message"></p>
+        <div class="dialog-buttons">
+          <button id="confirm-yes">Yes, Remove</button>
+          <button id="confirm-no" class="secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="move-page-modal" class="modal">
+      <div class="modal-content dialog-content move-page-content">
+        <h3>Move to Page</h3>
+        <p id="move-page-message"></p>
+        <div class="form-group">
+          <label for="move-page-screen-input">Target page</label>
+          <input type="number" id="move-page-screen-input" min="1" value="1" />
+        </div>
+        <div class="move-page-hint">
+          Keep current position if available; otherwise auto-place into the first free slot.
+        </div>
+        <div class="dialog-buttons">
+          <button id="move-page-confirm">Move Item</button>
+          <button id="move-page-cancel" class="secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Order: app dropped on folder -->
+    <div id="folder-drop-choice-modal" class="modal">
+      <div class="modal-content dialog-content folder-drop-choice-content">
+        <h3>Drop on folder</h3>
+        <p id="folder-drop-choice-message"></p>
+        <div class="folder-drop-choice-buttons">
+          <button type="button" id="folder-drop-swap-btn">Swap positions</button>
+          <button type="button" id="folder-drop-merge-btn">Merge into folder</button>
+        </div>
+        <div class="dialog-buttons folder-drop-cancel-row">
+          <button type="button" id="folder-drop-cancel-btn" class="secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paste XML modal -->
+    <div id="paste-xml-modal" class="modal">
+      <div class="modal-content paste-xml-modal-content">
+        <button type="button" class="close paste-xml-close" aria-label="Close">&times;</button>
+        <h2>Paste XML Source</h2>
+        <div class="form-group">
+          <label for="paste-xml-input">XML content</label>
+          <textarea id="paste-xml-input" class="xml-paste-textarea" spellcheck="false" placeholder="Paste full XML here, then press Ctrl+Enter or click Import XML"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button id="cancel-paste-xml">Cancel</button>
+          <button id="confirm-paste-xml" class="primary">Import XML</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI guide -->
+    <div id="guide-modal" class="modal">
+      <div class="modal-content guide-modal-content">
+        <button type="button" class="close guide-modal-close" aria-label="Close">&times;</button>
+        <div class="guide-modal-scroll">
+          <div class="guide-modal-hero">
+            <div class="guide-modal-head">
+              <p class="guide-modal-kicker">UI Guide</p>
+              <h2>How to use the editor on the server</h2>
+              <p class="guide-modal-intro">
+                This walkthrough covers the real editing flow: load XML, edit the canvas,
+                review the XML output, compare changes, and export the final file.
+              </p>
+            </div>
+
+            <div class="guide-flow-grid" role="list">
+              <article class="guide-flow-card" role="listitem">
+                <span class="guide-flow-step">1</span>
+                <h3>Load</h3>
+                <p>Start with <code>Load XML</code> or <code>Paste XML</code>.</p>
+              </article>
+              <article class="guide-flow-card" role="listitem">
+                <span class="guide-flow-step">2</span>
+                <h3>Edit</h3>
+                <p>Use drag and drop, double-click, and right-click actions on the canvas.</p>
+              </article>
+              <article class="guide-flow-card" role="listitem">
+                <span class="guide-flow-step">3</span>
+                <h3>Review</h3>
+                <p>Open <code>Show XML</code> or <code>Compare XML</code> to validate the result.</p>
+              </article>
+              <article class="guide-flow-card" role="listitem">
+                <span class="guide-flow-step">4</span>
+                <h3>Export</h3>
+                <p>Save when needed, then download the final XML with <code>Export XML</code>.</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="guide-ui-map" aria-label="Main areas of the editor">
+            <article class="guide-ui-panel">
+              <span class="guide-ui-number">1</span>
+              <h3>Toolbox</h3>
+              <p>Choose mode, select layout, load XML, add items, and manage the cart.</p>
+            </article>
+            <article class="guide-ui-panel">
+              <span class="guide-ui-number">2</span>
+              <h3>Canvas</h3>
+              <p>Preview pages, move items, open folders, and edit positions visually.</p>
+            </article>
+            <article class="guide-ui-panel">
+              <span class="guide-ui-number">3</span>
+              <h3>XML Panel</h3>
+              <p>Inspect generated XML, paste manual fixes, save editor changes, or copy output.</p>
+            </article>
+          </div>
+
+          <nav class="guide-quick-nav" aria-label="Guide sections">
+            <a href="#guide-start">Start</a>
+            <a href="#guide-canvas">Canvas</a>
+            <a href="#guide-tools">Tools</a>
+            <a href="#guide-xml">XML</a>
+            <a href="#guide-shortcuts">Shortcuts</a>
+          </nav>
+
+          <section id="guide-start" class="guide-section">
+            <div class="guide-section-head">
+              <div>
+                <p class="guide-section-kicker">Start here</p>
+                <h3>1. Load the correct data before editing</h3>
+              </div>
+              <span class="guide-section-chip">Mode + Layout first</span>
+            </div>
+            <div class="guide-card-grid">
+              <article class="guide-card">
+                <h4>Pick the right mode</h4>
+                <ul class="guide-list" role="list">
+                  <li><code>Application Order</code>: reorder apps and folders.</li>
+                  <li><code>Default Workspace</code>: edit real positions on each home screen.</li>
+                  <li>Switch mode before importing data so the editor detects the file correctly.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <h4>Choose the layout profile</h4>
+                <ul class="guide-list" role="list">
+                  <li>Use the preset that matches the device grid.</li>
+                  <li>If you choose <code>Custom grid</code>, set <code>Columns</code> and <code>Home rows</code>, then click <code>Apply Grid</code>.</li>
+                  <li><code>Grid Lines</code> helps you see placement boundaries while editing.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <h4>Bring XML into the editor</h4>
+                <ul class="guide-list" role="list">
+                  <li><code>Load XML</code>: import from a file on your machine.</li>
+                  <li><code>Paste XML</code>: paste raw XML directly into the modal.</li>
+                  <li>Use <code>Add Item</code> after loading if you want to insert new apps, folders, or widgets.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section id="guide-canvas" class="guide-section">
+            <div class="guide-section-head">
+              <div>
+                <p class="guide-section-kicker">Canvas workflow</p>
+                <h3>2. Edit visually on the middle canvas</h3>
+              </div>
+              <span class="guide-section-chip">Drag, double-click, right-click</span>
+            </div>
+            <div class="guide-preview-layout">
+              <article class="guide-card">
+                <h4>Main interactions</h4>
+                <ul class="guide-list" role="list">
+                  <li>Drag items to a new slot on the current page.</li>
+                  <li>Use <code>Previous</code> and <code>Next</code> to move between pages.</li>
+                  <li>Double-click a folder to open its contents.</li>
+                  <li>Double-click an app or widget to open the edit dialog directly.</li>
+                  <li>Right-click an item or empty slot to access <code>Add Here</code>, <code>Edit Item</code>, <code>Move to Page...</code>, <code>Send to Cart</code>, or <code>Remove Item</code>.</li>
+                </ul>
+              </article>
+
+              <figure class="guide-preview-card">
+                <img src="home-screen.png" alt="Example launcher layout result" loading="lazy" />
+                <figcaption>
+                  Example launcher result. Use the canvas to place items until the page looks right before exporting XML.
+                </figcaption>
+              </figure>
+            </div>
+          </section>
+
+          <section id="guide-tools" class="guide-section">
+            <div class="guide-section-head">
+              <div>
+                <p class="guide-section-kicker">Tools</p>
+                <h3>3. Use folders, cart, and compare tools to work faster</h3>
+              </div>
+              <span class="guide-section-chip">Power features</span>
+            </div>
+            <div class="guide-card-grid guide-card-grid-tight">
+              <article class="guide-card">
+                <h4>Folder modal</h4>
+                <ul class="guide-list" role="list">
+                  <li>Open a folder with double-click.</li>
+                  <li>Inside the folder modal, drag items to reorder them.</li>
+                  <li>Use the folder-level <code>Save</code> and <code>Reset</code> buttons for folder changes.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <h4>Cart tray</h4>
+                <ul class="guide-list" role="list">
+                  <li>Use <code>Send to Cart</code> to park an app or widget temporarily.</li>
+                  <li>You can also drag supported items into the cart area.</li>
+                  <li>Drag a cart card back to the canvas later to restore it.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <h4>Compare XML</h4>
+                <ul class="guide-list" role="list">
+                  <li><code>Current Output vs Paste</code>: compare the current editor result with pasted XML.</li>
+                  <li><code>Two Custom Sources</code>: compare any two XML texts side by side.</li>
+                  <li>Use this before export when you need a fast diff review.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section id="guide-xml" class="guide-section">
+            <div class="guide-section-head">
+              <div>
+                <p class="guide-section-kicker">XML and output</p>
+                <h3>4. Know which save button does what</h3>
+              </div>
+              <span class="guide-section-chip">Most important distinction</span>
+            </div>
+
+            <div class="guide-card-grid guide-save-grid">
+              <article class="guide-card guide-card-accent">
+                <h4>Left-side layout actions</h4>
+                <ul class="guide-list" role="list">
+                  <li><code>Save</code>: commits the current visual layout changes.</li>
+                  <li><code>Reset</code>: restores the layout to the last committed state.</li>
+                  <li><code>Export XML</code>: downloads the current output as an XML file.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <h4>Right-side XML editor actions</h4>
+                <ul class="guide-list" role="list">
+                  <li><code>Show XML</code>: opens or hides the XML panel.</li>
+                  <li><code>Save XML</code>: applies manual XML text edits back into the UI.</li>
+                  <li><code>Reset XML</code>: refreshes the editor text from the current layout.</li>
+                  <li><code>Copy XML</code>: copies the current XML text.</li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="guide-callout">
+              <strong>Good workflow:</strong> load XML, edit on canvas, optionally review in <code>Show XML</code>,
+              run <code>Compare XML</code> if needed, then use <code>Export XML</code>.
+            </div>
+            <div class="guide-callout guide-callout-soft">
+              <strong>Shortcut:</strong> inside the XML editor, press <span class="guide-keycap">Ctrl</span> + <span class="guide-keycap">S</span>
+              to save XML text changes quickly.
+            </div>
+          </section>
+
+          <section id="guide-shortcuts" class="guide-section">
+            <div class="guide-section-head">
+              <div>
+                <p class="guide-section-kicker">Keyboard</p>
+                <h3>5. Keyboard shortcuts</h3>
+              </div>
+              <span class="guide-section-chip">Speed up your flow</span>
+            </div>
+            <div class="guide-shortcut-grid">
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">S</span></span>
+                <span class="guide-shortcut-label">Save layout changes</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">Shift</span><span>+</span><span class="guide-keycap">S</span></span>
+                <span class="guide-shortcut-label">Export XML file</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">Z</span></span>
+                <span class="guide-shortcut-label">Undo last canvas change</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">Y</span></span>
+                <span class="guide-shortcut-label">Redo</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">Shift</span><span>+</span><span class="guide-keycap">Z</span></span>
+                <span class="guide-shortcut-label">Redo (alternate)</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">F</span></span>
+                <span class="guide-shortcut-label">Focus canvas search</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">←</span><span class="guide-keycap">→</span></span>
+                <span class="guide-shortcut-label">Previous / Next page</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Esc</span></span>
+                <span class="guide-shortcut-label">Close modal / clear selection</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Shift</span><span>+</span><span class="guide-keycap">Click</span></span>
+                <span class="guide-shortcut-label">Multi-select items</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Ctrl</span><span>+</span><span class="guide-keycap">Click</span></span>
+                <span class="guide-shortcut-label">Toggle item in selection</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Right-click</span></span>
+                <span class="guide-shortcut-label">Open context menu (Add, Edit, Move, Duplicate, Cart, Remove)</span>
+              </div>
+              <div class="guide-shortcut-row">
+                <span class="guide-shortcut-keys"><span class="guide-keycap">Double-click</span></span>
+                <span class="guide-shortcut-label">Open folder / edit item</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="modal-buttons guide-modal-actions">
+            <button type="button" id="close-guide-btn" class="primary">Close Guide</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help / contact -->
+    <div id="help-modal" class="modal">
+      <div class="modal-content help-modal-content">
+        <button type="button" class="close help-modal-close" aria-label="Close">&times;</button>
+        <div class="help-modal-head">
+          <h2>Help</h2>
+          <p class="help-modal-intro">Contact for support</p>
+        </div>
+        <ul class="help-contact-list" role="list">
+          <li class="help-contact-row">
+            <span class="help-contact-mark" aria-hidden="true">@</span>
+            <span class="help-contact-email"><a href="mailto:tung.trinh@samsung.com">tung.trinh@samsung.com</a></span>
+          </li>
+          <li class="help-contact-row">
+            <span class="help-contact-mark" aria-hidden="true">@</span>
+            <span class="help-contact-email"><a href="mailto:tuan.nm4@samsung.com">tuan.nm4@samsung.com</a></span>
+          </li>
+        </ul>
+        <div class="modal-buttons help-modal-actions">
+          <button type="button" id="close-help-btn" class="primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Public request board -->
+    <div id="request-board-modal" class="modal">
+      <div class="modal-content request-board-modal-content">
+        <button type="button" class="close request-board-close" aria-label="Close">&times;</button>
+        <div class="request-board-shell">
+          <aside class="request-board-compose">
+            <div class="request-board-hero">
+              <p class="request-board-kicker">Requests</p>
+              <h2>App Data Requests</h2>
+              <p class="request-board-intro">
+                Shared board for data fixes and app requests.
+              </p>
+            </div>
+
+            <div class="request-board-visibility">
+              <span class="request-visibility-label">Your IP</span>
+              <strong id="request-viewer-ip">Detecting...</strong>
+            </div>
+
+            <form id="request-board-form" class="request-board-form">
+              <div class="form-group">
+                <label for="request-type">Type *</label>
+                <select id="request-type" required>
+                  <option value="update-data-app">Update data app</option>
+                  <option value="add-new-app">Add new app</option>
+                  <option value="others">Others</option>
+                </select>
+              </div>
+
+              <div id="request-update-fields" class="request-form-section">
+                <div class="form-group">
+                  <label for="request-app-search">Find app *</label>
+                  <input
+                    type="text"
+                    id="request-app-search"
+                    placeholder="Search name, package, or class"
+                    autocomplete="off"
+                  />
+                  <div id="request-app-search-results" class="search-results request-search-results"></div>
+                </div>
+
+                <div id="request-selected-app-card" class="request-selected-app-card is-empty">
+                  <p class="request-selected-app-label">App</p>
+                  <div id="request-selected-app-content" class="request-selected-app-content">
+                    Select an app.
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="request-update-field">Field *</label>
+                  <select id="request-update-field" required>
+                    <option value="comment">Name</option>
+                    <option value="package-name">Package name</option>
+                    <option value="class-name">Class name</option>
+                    <option value="source-path">Source path</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="request-update-new-value" id="request-update-new-value-label">New value *</label>
+                  <input
+                    type="text"
+                    id="request-update-new-value"
+                    placeholder="Exact value to apply"
+                    required
+                  />
+                  <div id="request-update-current-value" class="request-inline-help">
+                    Current value appears here.
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="request-update-message" id="request-update-message-label">Note *</label>
+                  <textarea
+                    id="request-update-message"
+                    rows="5"
+                    placeholder="Short reason or context"
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <div id="request-add-fields" class="request-form-section" style="display: none;">
+                <div class="form-group">
+                  <label for="request-add-app-name">Name *</label>
+                  <input type="text" id="request-add-app-name" placeholder="Perplexity" />
+                </div>
+                <div class="form-group">
+                  <label for="request-add-package-name">Package</label>
+                  <input type="text" id="request-add-package-name" placeholder="ai.perplexity.app.android" />
+                </div>
+                <div class="form-group">
+                  <label for="request-add-class-name">Class</label>
+                  <input type="text" id="request-add-class-name" placeholder="ai.perplexity.app.android.ui.main.MainActivity" />
+                </div>
+                <div class="form-group">
+                  <label for="request-add-source-path" id="request-add-source-path-label">Source path</label>
+                  <input type="text" id="request-add-source-path" placeholder="//BENI_CSC/.../default_application_order.xml" />
+                </div>
+                <div class="form-group">
+                  <label for="request-add-message" id="request-add-message-label">Note *</label>
+                  <textarea
+                    id="request-add-message"
+                    rows="5"
+                    placeholder="What should be added?"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div id="request-other-fields" class="request-form-section" style="display: none;">
+                <div class="form-group">
+                  <label for="request-other-subject">Title *</label>
+                  <input type="text" id="request-other-subject" placeholder="Short title" />
+                </div>
+                <div class="form-group">
+                  <label for="request-other-message">Note *</label>
+                  <textarea
+                    id="request-other-message"
+                    rows="5"
+                    placeholder="Short note"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div id="request-direct-help" class="request-inline-help request-direct-help" hidden></div>
+
+              <div class="modal-buttons request-board-form-actions">
+                <button type="button" id="request-board-refresh-btn">Reload</button>
+                <div class="request-board-action-set">
+                  <button type="submit" id="request-board-submit-btn" class="primary">Post</button>
+                  <button type="button" id="request-board-direct-btn" hidden>Apply Now</button>
+                </div>
+              </div>
+            </form>
+          </aside>
+
+          <section class="request-board-feed">
+            <div class="request-board-feed-head">
+              <div>
+                <p class="request-board-feed-kicker">Board</p>
+                <h3>Requests</h3>
+              </div>
+              <span id="request-board-updated-at" class="request-board-updated-at">Not synced</span>
+            </div>
+
+            <div id="request-board-summary" class="request-board-summary"></div>
+
+            <div class="request-board-filters">
+              <div class="form-group">
+                <label for="request-filter-type">Type</label>
+                <select id="request-filter-type">
+                  <option value="all">All</option>
+                  <option value="update-data-app">Update data app</option>
+                  <option value="add-new-app">Add new app</option>
+                  <option value="others">Others</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="request-filter-status">Status</label>
+                <select id="request-filter-status">
+                  <option value="all">All</option>
+                  <option value="open">Open</option>
+                  <option value="in-review">In review</option>
+                  <option value="applied">Applied</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="request-board-list" class="request-board-list" aria-live="polite"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="access-control-modal" class="modal">
+      <div class="modal-content access-control-modal-content">
+        <button type="button" class="close access-control-modal-close" aria-label="Close">&times;</button>
+        <div class="access-control-modal-head">
+          <div>
+            <p class="request-board-kicker">Approvers</p>
+            <h2>Access Control</h2>
+            <p class="activity-modal-intro">Manage approved IPs for apply and activity access.</p>
+          </div>
+          <span class="request-admin-badge">Host only</span>
+        </div>
+
+        <section id="access-control-panel" class="request-admin-panel" hidden>
+          <form id="request-approver-form" class="request-approver-form">
+            <div class="request-approver-grid">
+              <div class="form-group">
+                <label for="request-approver-ip">IP *</label>
+                <input type="text" id="request-approver-ip" placeholder="192.168.1.25" />
+              </div>
+              <div class="form-group">
+                <label for="request-approver-name">Name *</label>
+                <input type="text" id="request-approver-name" placeholder="Alice" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="request-approver-note">Note</label>
+              <input type="text" id="request-approver-note" placeholder="QA laptop / owner / team" />
+            </div>
+            <div class="modal-buttons request-approver-actions">
+              <button type="submit" id="request-approver-submit-btn" class="primary">Save Access</button>
+            </div>
+          </form>
+
+          <div id="request-approver-list" class="request-approver-list"></div>
+        </section>
+
+        <div class="modal-buttons access-control-modal-actions">
+          <button type="button" id="close-access-control-btn" class="primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="activity-modal" class="modal">
+      <div class="modal-content activity-modal-content">
+        <button type="button" class="close activity-modal-close" aria-label="Close">&times;</button>
+        <div class="activity-modal-head">
+          <div>
+            <p class="request-board-kicker">Activity</p>
+            <h2>Today’s Access</h2>
+            <p class="activity-modal-intro">IPs that reached the server today.</p>
+          </div>
+          <div class="activity-modal-meta">
+            <span id="activity-date-pill" class="activity-meta-pill">Today</span>
+            <span id="activity-updated-pill" class="activity-meta-pill">Not synced</span>
+          </div>
+        </div>
+
+        <div id="activity-summary" class="activity-summary"></div>
+        <div id="activity-list" class="activity-list" aria-live="polite"></div>
+
+        <div class="modal-buttons activity-modal-actions">
+          <button type="button" id="activity-refresh-btn">Reload</button>
+          <button type="button" id="close-activity-btn" class="primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw XML modal -->
+    <div id="raw-xml-modal" class="modal">
+      <div class="modal-content paste-xml-modal-content">
+        <button type="button" class="close raw-xml-close" aria-label="Close">&times;</button>
+        <h2>XML Output Text</h2>
+        <div class="form-group">
+          <label for="raw-xml-output">Generated XML</label>
+          <textarea id="raw-xml-output" class="xml-paste-textarea" spellcheck="false" readonly></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button id="cancel-raw-xml">Close</button>
+          <button id="copy-raw-xml" class="primary">Copy XML</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compare XML modal -->
+    <div id="compare-xml-modal" class="modal">
+      <div class="modal-content compare-xml-modal-content">
+        <button type="button" class="close compare-xml-close" aria-label="Close">&times;</button>
+        <div class="compare-modal-header">
+          <h2>Compare XML</h2>
+          <div class="compare-source-tabs">
+            <button type="button" class="compare-tab is-active" data-tab="current">Current Output vs Paste</button>
+            <button type="button" class="compare-tab" data-tab="custom">Two Custom Sources</button>
+          </div>
+        </div>
+
+        <!-- Tab: Current output vs pasted -->
+        <div id="compare-tab-current" class="compare-tab-panel is-active">
+          <div class="compare-source-row">
+            <div class="compare-source-col">
+              <label class="compare-source-label" for="compare-source-a-current">Source A - Current Output <span class="compare-auto-badge">Auto</span></label>
+              <textarea id="compare-source-a-current" class="compare-source-textarea" spellcheck="false" readonly placeholder="Current XML output will be loaded automatically"></textarea>
+            </div>
+            <div class="compare-source-col">
+              <label class="compare-source-label" for="compare-source-b-current">Source B - Paste XML</label>
+              <textarea id="compare-source-b-current" class="compare-source-textarea" spellcheck="false" placeholder="Paste the XML you want to compare against"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Two custom sources -->
+        <div id="compare-tab-custom" class="compare-tab-panel">
+          <div class="compare-source-row">
+            <div class="compare-source-col">
+              <label class="compare-source-label" for="compare-source-a-custom">Source A</label>
+              <textarea id="compare-source-a-custom" class="compare-source-textarea" spellcheck="false" placeholder="Paste first XML source here"></textarea>
+            </div>
+            <div class="compare-source-col">
+              <label class="compare-source-label" for="compare-source-b-custom">Source B</label>
+              <textarea id="compare-source-b-custom" class="compare-source-textarea" spellcheck="false" placeholder="Paste second XML source here"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare-actions">
+          <button type="button" id="compare-swap-btn" class="compare-swap-btn" title="Swap Source A and Source B">Swap A ↔ B</button>
+          <button type="button" id="run-compare-btn" class="primary">Run Compare</button>
+          <button type="button" id="close-compare-btn">Close</button>
+        </div>
+
+        <!-- Diff output -->
+        <div id="compare-diff-output" class="compare-diff-output" style="display:none;">
+          <div class="compare-diff-toolbar">
+            <h3>Diff Result</h3>
+            <div class="compare-diff-toolbar-meta">
+              <div class="compare-diff-stats">
+                <span class="diff-stat diff-stat-add" id="diff-stat-add">+0</span>
+                <span class="diff-stat diff-stat-del" id="diff-stat-del">-0</span>
+                <span class="diff-stat diff-stat-same" id="diff-stat-same">0 same</span>
+              </div>
+              <div class="compare-diff-toolbar-actions">
+                <button type="button" id="compare-diff-focus-btn" class="compare-diff-toolbar-btn" aria-pressed="false">Show Diff Full Screen</button>
+              </div>
+            </div>
+          </div>
+          <div id="compare-diff-view" class="compare-diff-view"></div>
+          <div class="diff-side-headers">
+            <div class="diff-side-header diff-side-header-a" id="diff-header-a">Source A</div>
+            <div class="diff-side-header diff-side-header-b" id="diff-header-b">Source B</div>
+          </div>
+          <div class="diff-side-wrapper" id="diff-side-wrapper">
+            <div class="diff-side-pane diff-side-pane-a" id="diff-pane-a"></div>
+            <div class="diff-side-divider"></div>
+            <div class="diff-side-pane diff-side-pane-b" id="diff-pane-b"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folder modal -->
+    <div id="folder-modal" class="modal">
+      <div class="modal-content folder-modal-content">
+        <div class="folder-modal-header">
+          <div class="folder-modal-header-left">
+            <div class="folder-modal-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M2 6C2 4.89543 2.89543 4 4 4H9L11 6H20C21.1046 6 22 6.89543 22 8V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6Z" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="folder-modal-title-group">
+              <h2 id="folder-title">Folder Contents</h2>
+              <span class="folder-modal-item-count" id="folder-item-count">0 items</span>
+            </div>
+          </div>
+          <button class="folder-modal-close-btn folder-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="folder-modal-toolbar">
+          <div class="folder-controls">
+            <button id="folder-save-btn" class="folder-btn-save" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save
+            </button>
+            <button id="folder-reset-btn" class="folder-btn-reset" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+        <div class="folder-grid-wrapper">
+          <div id="folder-grid" class="folder-grid"></div>
+        </div>
+        <div class="folder-modal-footer">
+          <div class="folder-pagination">
+            <button id="folder-prev-btn" disabled>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Prev
+            </button>
+            <span id="folder-page-info" class="folder-page-pill">1 / 1</span>
+            <button id="folder-next-btn">
+              Next
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/script.js"></script>
+    <script src="layout-tool-enhancements.js?v=20260515a"></script>
+  </body>
+</html>

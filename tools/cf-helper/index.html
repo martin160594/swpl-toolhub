@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Local CF helper for JSON quote escaping and CarrierFeature updates.">
+    <meta name="theme-color" content="#f4f4f6" data-light="#f4f4f6" data-dark="#0e0e10">
+    <title>CF Helper - SWPL ToolHub</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <script src="../../data/site-config.js"></script>
+    <script src="../../assets/tool-bridge.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../../assets/tool-bridge.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="app">
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand__mark" aria-hidden="true">{}</div>
+                <div class="brand__copy">
+                    <p class="eyebrow">SWPL local tool</p>
+                    <h1>CF Helper</h1>
+                    <p class="app-header__tagline">Escape JSON quotes and update CarrierFeature rows without leaving the browser.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="swpl-theme-toggle" data-swpl-theme-toggle aria-label="Toggle light and dark theme" title="Toggle theme">
+                    <svg class="swpl-icon-moon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="swpl-icon-sun" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                </button>
+                <a class="hub-back" href="../../index.html">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                    Tool Hub
+                </a>
+                <details class="tool-switcher">
+                    <summary>Choose tool</summary>
+                    <nav class="tool-switcher__menu" aria-label="Choose tool">
+                        <a href="../../index.html">Tool Hub</a>
+                        <a href="../layout-editor/index.html">Layout Editor</a>
+                        <a href="../cf-helper/index.html" aria-current="page">CF Helper</a>
+                        <a href="../image-compressor/index.html">Image Compression</a>
+                    </nav>
+                </details>
+            </div>
+        </header>
+
+        <div class="app-frame">
+            <nav class="tool-nav" aria-label="Tools" role="tablist">
+                <button type="button" class="tool-nav__btn is-active" data-tab="carrier-feature-inserter" role="tab" aria-selected="true" aria-controls="carrier-feature-inserter-tab">
+                    <span class="tool-nav__label">Carrier insert</span>
+                    <span class="tool-nav__meta">IMS / CP by ID</span>
+                </button>
+                <button type="button" class="tool-nav__btn" data-tab="quote-escaper" role="tab" aria-selected="false" aria-controls="quote-escaper-tab">
+                    <span class="tool-nav__label">Quote escaper</span>
+                    <span class="tool-nav__meta">JSON string output</span>
+                </button>
+            </nav>
+
+            <main id="main" class="main">
+                <div id="error-message" class="banner banner--error hidden" role="status" aria-live="polite"></div>
+
+                <section id="carrier-feature-inserter-tab" class="tool-panel is-active" aria-labelledby="carrier-heading" role="tabpanel">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">CarrierFeature workflow</p>
+                            <h2 id="carrier-heading">Insert IMS and CP feature payloads</h2>
+                        </div>
+                        <div id="carrier-id-summary" class="status-pill">No targets selected</div>
+                    </div>
+
+                    <div class="workbench workbench--carrier">
+                        <div class="input-stack">
+                            <section class="tool-card tool-card--compact" aria-labelledby="target-heading">
+                                <div class="tool-card__head">
+                                    <div>
+                                        <h3 id="target-heading">Targets</h3>
+                                        <p>Use commas, spaces, or new lines for multiple canonical IDs or carrier groups.</p>
+                                    </div>
+                                </div>
+                                <label class="field-label" for="canonical-id">Canonical IDs</label>
+                                <input type="text" id="canonical-id" class="text-input" placeholder="31085, 31086" spellcheck="false" autocomplete="off">
+                                <label class="field-label" for="carrier-group">Carrier Groups</label>
+                                <input type="text" id="carrier-group" class="text-input" placeholder="XXV, SKZ" spellcheck="false" autocomplete="off">
+                            </section>
+
+                            <section class="tool-card" aria-labelledby="carrier-json-heading">
+                                <div class="tool-card__head">
+                                    <div>
+                                        <h3 id="carrier-json-heading">CarrierFeature JSON</h3>
+                                        <p>Load a file or start from the bundled template.</p>
+                                    </div>
+                                    <div class="btn-row btn-row--right">
+                                        <button type="button" id="ims-load-file-btn" class="btn btn--ghost">Load file</button>
+                                        <input type="file" id="ims-file-input" accept=".json,.txt" hidden>
+                                        <button type="button" id="ims-template-btn" class="btn btn--ghost">Template</button>
+                                        <button type="button" id="ims-paste-btn" class="btn btn--ghost">Paste</button>
+                                        <button type="button" id="ims-clear-btn" class="btn btn--ghost">Clear</button>
+                                    </div>
+                                </div>
+                                <label class="field-label visually-hidden" for="carrier-feature-json">CarrierFeature JSON</label>
+                                <textarea id="carrier-feature-json" class="code-input code-input--medium" placeholder="CarrierFeature JSON..." spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="10"></textarea>
+                            </section>
+
+                            <div class="feature-grid">
+                                <section class="tool-card tool-card--payload" aria-labelledby="ims-code-heading">
+                                    <div class="tool-card__head">
+                                        <div>
+                                            <h3 id="ims-code-heading">IMS code</h3>
+                                            <p>Saved as CarrierFeature_IMS_ImsUpdate.</p>
+                                        </div>
+                                        <button type="button" id="ims-example-btn" class="btn btn--ghost">Example</button>
+                                    </div>
+                                    <label class="field-label visually-hidden" for="ims-code">IMS code</label>
+                                    <textarea id="ims-code" class="code-input code-input--short" placeholder='{"note":"...","imsprofile_update":{...}}' spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="7"></textarea>
+                                </section>
+
+                                <section class="tool-card tool-card--payload" aria-labelledby="cp-feature-heading">
+                                    <div class="tool-card__head">
+                                        <div>
+                                            <h3 id="cp-feature-heading">CP feature</h3>
+                                            <p>Line breaks are collapsed before insert.</p>
+                                        </div>
+                                        <button type="button" id="cp-example-btn" class="btn btn--ghost">Example</button>
+                                    </div>
+                                    <label class="field-label visually-hidden" for="cp-feature-data">CP feature</label>
+                                    <textarea id="cp-feature-data" class="code-input code-input--short" placeholder="<CP_FEATURE>...</CP_FEATURE>" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="7"></textarea>
+                                </section>
+                            </div>
+
+                            <button type="button" id="insert-features-btn" class="btn btn--primary btn--block">Insert features</button>
+                        </div>
+
+                        <aside class="output-stack" aria-labelledby="carrier-output-heading">
+                            <section class="tool-card tool-card--output">
+                                <div class="tool-card__head">
+                                    <div>
+                                        <h3 id="carrier-output-heading">Modified JSON</h3>
+                                        <p id="carrier-summary">Waiting for insert.</p>
+                                    </div>
+                                    <div class="btn-row btn-row--right">
+                                        <button type="button" id="ims-save-file-btn" class="btn btn--ghost">Save</button>
+                                        <button type="button" id="ims-copy-btn" class="btn btn--ghost">Copy</button>
+                                    </div>
+                                </div>
+                                <label class="field-label visually-hidden" for="ims-output-json">Modified JSON</label>
+                                <div id="carrier-diff-preview" class="diff-preview" aria-live="polite">
+                                    <div class="diff-preview__empty">Diff preview appears after Insert.</div>
+                                </div>
+                                <textarea id="ims-output-json" class="code-input code-input--readonly code-input--tall" readonly placeholder="Modified CarrierFeature JSON..." spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="18"></textarea>
+                            </section>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="quote-escaper-tab" class="tool-panel" aria-labelledby="quote-escaper-heading" role="tabpanel" hidden>
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Quote escaper</p>
+                            <h2 id="quote-escaper-heading">Convert JSON into an escaped string</h2>
+                        </div>
+                        <div id="quote-status" class="status-pill">Ready</div>
+                    </div>
+
+                    <div class="workbench">
+                        <section class="tool-card" aria-labelledby="quote-input-heading">
+                            <div class="tool-card__head">
+                                <div>
+                                    <h3 id="quote-input-heading">Input JSON</h3>
+                                    <p id="input-size-hint" hidden></p>
+                                </div>
+                                <div class="btn-row btn-row--right">
+                                    <button type="button" id="load-file-btn" class="btn btn--ghost">Load file</button>
+                                    <input type="file" id="file-input" accept=".json,.txt" hidden>
+                                    <button type="button" id="paste-btn" class="btn btn--ghost">Paste</button>
+                                    <button type="button" id="clear-btn" class="btn btn--ghost">Clear</button>
+                                </div>
+                            </div>
+                            <label class="field-label visually-hidden" for="input-json">JSON</label>
+                            <textarea id="input-json" class="code-input code-input--tall" placeholder="Paste or load JSON..." spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="18"></textarea>
+                            <div class="option-row">
+                                <label class="check">
+                                    <input type="checkbox" id="remove-line-breaks" checked>
+                                    <span>Remove line breaks</span>
+                                </label>
+                                <button type="button" id="convert-btn" class="btn btn--primary">Convert</button>
+                            </div>
+                        </section>
+
+                        <section class="tool-card tool-card--output" aria-labelledby="quote-output-heading">
+                            <div class="tool-card__head">
+                                <div>
+                                    <h3 id="quote-output-heading">Escaped output</h3>
+                                    <p id="quote-output-meta">No output yet.</p>
+                                </div>
+                                <div class="btn-row btn-row--right">
+                                    <button type="button" id="save-file-btn" class="btn btn--ghost">Save</button>
+                                    <button type="button" id="copy-btn" class="btn btn--ghost">Copy</button>
+                                </div>
+                            </div>
+                            <label class="field-label visually-hidden" for="output-json">Escaped output</label>
+                            <textarea id="output-json" class="code-input code-input--readonly code-input--tall" readonly placeholder="Result appears here..." spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" rows="18"></textarea>
+                        </section>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="syntax-error-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal__card">
+            <div class="modal__head">
+                <h2 id="modal-title" class="modal__title">Syntax error</h2>
+                <button type="button" id="close-modal-btn" class="icon-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal__body">
+                <pre id="modal-error-message" class="modal__pre"></pre>
+            </div>
+            <div class="modal__foot">
+                <button type="button" id="modal-close-btn" class="btn btn--ghost">Close</button>
+                <button type="button" id="modal-continue-btn" class="btn btn--primary">Continue anyway</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

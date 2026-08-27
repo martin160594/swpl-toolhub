@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWPL ToolHub</title>
+  <meta name="description" content="SWPL ToolHub - the launchpad for SWPL web tools and desktop apps." />
+  <meta name="theme-color" content="#f6f6f7" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23c2410c'/%3E%3Cg fill='%23fff'%3E%3Crect x='12' y='12' width='17' height='17' rx='4.5'/%3E%3Crect x='35' y='12' width='17' height='17' rx='4.5'/%3E%3Crect x='12' y='35' width='17' height='17' rx='4.5'/%3E%3Crect x='35' y='35' width='17' height='17' rx='8.5'/%3E%3C/g%3E%3C/svg%3E" />
+
+  <script src="data/site-config.js"></script>
+  <script src="data/tools.js"></script>
+  <script src="assets/icons.js"></script>
+  <script>
+    /* Resolve theme before first paint to avoid a flash. */
+    (function () {
+      try {
+        var saved = localStorage.getItem("swpl.theme");
+        var mode = saved;
+        if (mode !== "light" && mode !== "dark") {
+          var cfg = window.SWPL_CONFIG || {};
+          if (/(^|[?&])draft=1(&|$)/.test(location.search)) {
+            try {
+              var draft = JSON.parse(localStorage.getItem("swpl.toolhub.draft") || "null");
+              if (draft && draft.config && draft.config.theme && draft.config.theme.defaultMode) {
+                cfg = { theme: draft.config.theme };
+              }
+            } catch (e) {}
+          }
+          mode = cfg.theme && (cfg.theme.defaultMode === "light" || cfg.theme.defaultMode === "dark")
+            ? cfg.theme.defaultMode
+            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        }
+        document.documentElement.setAttribute("data-theme", mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/site.css" />
+</head>
+<body data-anim="on" data-pattern="on" data-hero-style="aurora" data-card-style="elevated">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <header class="topbar container-w">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"><svg class="icn" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true"><rect x="8" y="8" width="21" height="21" rx="5.5"/><rect x="35" y="8" width="21" height="21" rx="5.5"/><rect x="8" y="35" width="21" height="21" rx="5.5"/><rect x="35" y="35" width="21" height="21" rx="10.5"/></svg></span>
+      <span class="brand-word" id="brand-word">SWPL <em>ToolHub</em></span>
+    </a>
+    <nav class="topbar-actions" aria-label="Site actions">
+      <button type="button" class="iconbtn theme-toggle" id="theme-toggle" aria-label="Toggle light and dark theme" title="Toggle theme">
+        <svg class="icn icn-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icn icn-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <a class="iconbtn" href="admin.html" data-admin-link aria-label="Admin console" title="Admin console">
+        <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </a>
+    </nav>
+  </header>
+
+  <main id="main" class="container-w">
+    <section class="hero">
+      <h1 class="hero-title" id="hero-title">SWPL ToolHub</h1>
+      <p class="hero-tagline" id="hero-tagline"></p>
+    </section>
+
+    <section class="finder" aria-label="Find a tool">
+      <div class="search" id="search-box">
+        <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="search-input" placeholder="Search tools" aria-label="Search tools" autocomplete="off" spellcheck="false" />
+        <kbd aria-hidden="true">/</kbd>
+        <button type="button" class="search-clear" id="search-clear" aria-label="Clear search">
+          <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="chips" id="chips" role="radiogroup" aria-label="Filter by category"></div>
+    </section>
+
+    <section class="grid" id="tool-grid" aria-label="Tools"></section>
+
+    <div class="empty" id="empty-state" hidden>
+      <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>No tools match your search.</p>
+      <button type="button" id="empty-reset">Clear filters</button>
+    </div>
+  </main>
+
+  <footer class="site-footer container-w">
+    <span id="footer-text"></span>
+    <a href="admin.html" data-admin-link>
+      <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4M4.22 4.22l2.83 2.83m9.9 9.9 2.83 2.83M1 12h4m14 0h4M4.22 19.78l2.83-2.83m9.9-9.9 2.83-2.83"/></svg>
+      Admin
+    </a>
+  </footer>
+
+  <dialog class="tool-dialog" id="tool-dialog" aria-labelledby="dlg-title"></dialog>
+
+  <script src="assets/site.js"></script>
+</body>
+</html>

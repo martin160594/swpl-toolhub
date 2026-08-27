@@ -1,0 +1,567 @@
+/* ============================================================
+   SWPL ToolHub - embedded tool bridge styles
+   Shared design tokens so every embedded tool matches the hub.
+   Loaded LAST in each tool page so it overrides local values.
+   The accent (--swpl-fill / --swpl-ink / --swpl-rgb) is injected
+   by tool-bridge.js from the hub config; light/dark follows the
+   shared "swpl.theme" preference.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --swpl-fill: #c2410c;
+  --swpl-ink:  #9a3412;
+  --swpl-rgb:  251, 146, 60;
+
+  /* Unified neutral palette (light) */
+  --swpl-bg: #f4f4f6;
+  --swpl-surface: #ffffff;
+  --swpl-surface-soft: #f6f6f8;
+  --swpl-surface-strong: #ebebef;
+  --swpl-text: #17171a;
+  --swpl-text-2: #43434c;
+  --swpl-muted: #5d5d66;
+  --swpl-soft: #77777f;
+  --swpl-border: rgba(23, 23, 26, 0.10);
+  --swpl-border-strong: rgba(23, 23, 26, 0.18);
+  --swpl-accent-soft: color-mix(in srgb, var(--swpl-fill) 12%, #ffffff);
+
+  --swpl-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --swpl-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --swpl-shadow: 0 22px 50px -28px rgba(40, 36, 32, 0.30);
+  --swpl-shadow-soft: 0 12px 30px -22px rgba(40, 36, 32, 0.26);
+
+  --swpl-page:
+    radial-gradient(1100px 720px at 82% -12%, color-mix(in srgb, rgb(var(--swpl-rgb)) 13%, transparent), transparent 60%),
+    radial-gradient(900px 640px at 0% 112%, color-mix(in srgb, var(--swpl-fill) 7%, transparent), transparent 60%),
+    var(--swpl-bg);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --swpl-bg: #0e0e10;
+  --swpl-surface: #17171a;
+  --swpl-surface-soft: #1c1c20;
+  --swpl-surface-strong: #232328;
+  --swpl-text: #f0f0f2;
+  --swpl-text-2: #c3c3cb;
+  --swpl-muted: #9a9aa4;
+  --swpl-soft: #80808a;
+  --swpl-border: rgba(240, 240, 242, 0.10);
+  --swpl-border-strong: rgba(240, 240, 242, 0.20);
+  --swpl-accent-soft: color-mix(in srgb, rgb(var(--swpl-rgb)) 15%, transparent);
+
+  --swpl-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.65);
+  --swpl-shadow-soft: 0 14px 34px -24px rgba(0, 0, 0, 0.55);
+
+  --swpl-page:
+    radial-gradient(1100px 720px at 82% -12%, color-mix(in srgb, rgb(var(--swpl-rgb)) 9%, transparent), transparent 60%),
+    var(--swpl-bg);
+}
+
+/* ====================== Shared theme toggle ====================== */
+.swpl-theme-toggle {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--swpl-border);
+  background: var(--swpl-surface);
+  color: var(--swpl-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.swpl-theme-toggle:hover { color: var(--swpl-text); border-color: var(--swpl-border-strong); }
+.swpl-theme-toggle:active { transform: scale(0.95); }
+.swpl-theme-toggle svg { width: 17px; height: 17px; }
+.swpl-theme-toggle .swpl-icon-sun { display: none; }
+html[data-theme="dark"] .swpl-theme-toggle .swpl-icon-sun { display: block; }
+html[data-theme="dark"] .swpl-theme-toggle .swpl-icon-moon { display: none; }
+
+/* ====================== CF HELPER (json tool) ====================== */
+.app {
+  --bg: var(--swpl-bg);
+  --surface: var(--swpl-surface);
+  --surface-muted: var(--swpl-surface-soft);
+  --surface-strong: var(--swpl-surface-strong);
+  --text: var(--swpl-text);
+  --text-secondary: var(--swpl-text-2);
+  --text-muted: var(--swpl-muted);
+  --border: var(--swpl-border);
+  --border-strong: var(--swpl-border-strong);
+  --accent: var(--swpl-ink);
+  --accent-hover: var(--swpl-ink);
+  --accent-soft: var(--swpl-accent-soft);
+  --accent-ink: #ffffff;
+  --success: #047857;
+  --success-soft: color-mix(in srgb, #047857 12%, #ffffff);
+  --danger: #be123c;
+  --danger-soft: color-mix(in srgb, #be123c 12%, #ffffff);
+  --warning: #b45309;
+  --warning-soft: color-mix(in srgb, #b45309 14%, #ffffff);
+  --shadow: var(--swpl-shadow);
+  --shadow-soft: var(--swpl-shadow-soft);
+  --font: var(--swpl-font);
+  --mono: var(--swpl-mono);
+}
+body:has(.app) {
+  background: var(--swpl-page) !important;
+  font-family: var(--swpl-font);
+}
+
+html[data-theme="dark"] .app {
+  --accent: rgb(var(--swpl-rgb));
+  --accent-hover: color-mix(in srgb, rgb(var(--swpl-rgb)) 82%, #ffffff);
+  --accent-ink: #221004;
+  --success: #34d399;
+  --success-soft: color-mix(in srgb, #34d399 16%, transparent);
+  --danger: #fb7185;
+  --danger-soft: color-mix(in srgb, #fb7185 16%, transparent);
+  --warning: #fbbf24;
+  --warning-soft: color-mix(in srgb, #fbbf24 15%, transparent);
+}
+
+/* ====================== LAYOUT EDITOR ====================== */
+.container {
+  --bg: var(--swpl-bg);
+  --surface: color-mix(in srgb, var(--swpl-surface) 88%, transparent);
+  --surface-elevated: var(--swpl-surface);
+  --surface-soft: var(--swpl-surface-soft);
+  --surface-hover: color-mix(in srgb, var(--swpl-fill) 8%, var(--swpl-surface));
+  --border: color-mix(in srgb, var(--swpl-text) 13%, var(--swpl-bg));
+  --border-strong: color-mix(in srgb, var(--swpl-text) 22%, var(--swpl-bg));
+  --accent: var(--swpl-fill);
+  --accent-light: color-mix(in srgb, var(--swpl-fill) 16%, #ffffff);
+  --primary-400: color-mix(in srgb, var(--swpl-fill) 65%, #ffffff);
+  --primary-500: var(--swpl-fill);
+  --primary-600: var(--swpl-ink);
+  --primary-700: var(--swpl-ink);
+  --slate-900: var(--swpl-text);
+  --font: var(--swpl-font);
+  --mono: var(--swpl-mono);
+}
+body:has(.container) {
+  background: var(--swpl-page) !important;
+  font-family: var(--swpl-font);
+}
+
+html[data-theme="dark"] .container {
+  --surface: color-mix(in srgb, var(--swpl-surface) 92%, transparent);
+  --surface-hover: color-mix(in srgb, rgb(var(--swpl-rgb)) 14%, var(--swpl-surface));
+  --accent: rgb(var(--swpl-rgb));
+  --accent-light: color-mix(in srgb, rgb(var(--swpl-rgb)) 20%, var(--swpl-surface));
+  --primary-400: color-mix(in srgb, rgb(var(--swpl-rgb)) 55%, var(--swpl-surface));
+  --primary-500: rgb(var(--swpl-rgb));
+  --primary-600: color-mix(in srgb, rgb(var(--swpl-rgb)) 80%, #ffffff);
+  --primary-700: color-mix(in srgb, rgb(var(--swpl-rgb)) 65%, #ffffff);
+}
+
+/* ---- Layout Editor dark skin ----
+   The original stylesheet hardcodes its light "Soft Daylight" colors, so the
+   chrome gets an explicit dark pass here. The device canvas intentionally
+   stays light: it mimics a phone home screen. */
+html[data-theme="dark"] .container,
+html[data-theme="dark"] .container h2,
+html[data-theme="dark"] .container h3,
+html[data-theme="dark"] .container h4 {
+  color: var(--swpl-text);
+}
+
+html[data-theme="dark"] .container .tool-section,
+html[data-theme="dark"] .container #canvas-search-section {
+  background: var(--swpl-surface);
+  border-color: var(--swpl-border);
+}
+
+html[data-theme="dark"] .container .tool-section-label,
+html[data-theme="dark"] .container label,
+html[data-theme="dark"] .container .field-group label {
+  color: var(--swpl-muted);
+}
+
+html[data-theme="dark"] .container select,
+html[data-theme="dark"] .container input[type="text"],
+html[data-theme="dark"] .container input[type="number"],
+html[data-theme="dark"] .container input[type="search"],
+html[data-theme="dark"] .container textarea,
+html[data-theme="dark"] .container #canvas-search-input {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container select option {
+  background: var(--swpl-surface);
+  color: var(--swpl-text);
+}
+html[data-theme="dark"] .container input::placeholder,
+html[data-theme="dark"] .container textarea::placeholder {
+  color: var(--swpl-soft);
+}
+
+html[data-theme="dark"] .container .grid-toggle-wrapper {
+  background: var(--swpl-surface-soft);
+  border-color: var(--swpl-border);
+}
+
+/* Toolbox buttons */
+html[data-theme="dark"] .container .btn-neutral,
+html[data-theme="dark"] .container .btn-ghost,
+html[data-theme="dark"] .container .btn-compare {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .btn-neutral:hover:not(:disabled),
+html[data-theme="dark"] .container .btn-ghost:hover:not(:disabled),
+html[data-theme="dark"] .container .btn-compare:hover:not(:disabled) {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .btn-dark {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .btn-dark:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--swpl-surface-strong) 70%, #3a3a42);
+}
+html[data-theme="dark"] .container .btn-success {
+  background: color-mix(in srgb, #34d399 18%, var(--swpl-surface));
+  color: #6ee7b7;
+  border-color: color-mix(in srgb, #34d399 40%, transparent);
+}
+html[data-theme="dark"] .container .btn-accent {
+  background: rgb(var(--swpl-rgb));
+  color: #221004;
+  border-color: transparent;
+}
+html[data-theme="dark"] .container .btn-accent:hover:not(:disabled) {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 82%, #ffffff);
+}
+html[data-theme="dark"] .container button:disabled {
+  opacity: 0.45;
+}
+
+/* Header links, switcher, status */
+html[data-theme="dark"] .container .hub-back-link { color: rgb(var(--swpl-rgb)); }
+html[data-theme="dark"] .container .tool-switcher summary {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .tool-switcher__menu {
+  background: var(--swpl-surface);
+  border-color: var(--swpl-border-strong);
+  box-shadow: var(--swpl-shadow);
+}
+html[data-theme="dark"] .container .tool-switcher__menu a { color: var(--swpl-text-2); }
+html[data-theme="dark"] .container .tool-switcher__menu a:hover,
+html[data-theme="dark"] .container .tool-switcher__menu a[aria-current="page"] { color: rgb(var(--swpl-rgb)); }
+
+html[data-theme="dark"] .container .status-pill,
+html[data-theme="dark"] .container #header-state-pill {
+  background: color-mix(in srgb, #34d399 14%, var(--swpl-surface));
+  color: #6ee7b7;
+  border-color: color-mix(in srgb, #34d399 35%, transparent);
+}
+html[data-theme="dark"] .container .help-toolbox-btn {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .help-toolbox-btn:hover {
+  color: rgb(var(--swpl-rgb));
+  border-color: color-mix(in srgb, rgb(var(--swpl-rgb)) 40%, transparent);
+}
+html[data-theme="dark"] .container .toolbox-counter {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text-2);
+}
+
+/* Cart */
+html[data-theme="dark"] .container #cart-panel { background: var(--swpl-surface); }
+html[data-theme="dark"] .container #cart-drop-zone,
+html[data-theme="dark"] .container .cart-empty-state {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-muted);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container #cart-count-pill {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 16%, var(--swpl-surface));
+  color: rgb(var(--swpl-rgb));
+}
+html[data-theme="dark"] .container #cart-clear-btn {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text-2);
+}
+html[data-theme="dark"] .container .cart-item {
+  background: var(--swpl-surface-soft);
+  border-color: var(--swpl-border-strong);
+  color: var(--swpl-text);
+}
+
+/* Canvas chrome (page-mode pills, readout, pagination) */
+html[data-theme="dark"] .container .canvas-page-mode {
+  background: var(--swpl-surface-soft);
+  border-color: var(--swpl-border);
+}
+html[data-theme="dark"] .container .canvas-page-mode-btn { color: var(--swpl-muted); background: transparent; }
+html[data-theme="dark"] .container .canvas-page-mode-btn.is-active {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 18%, var(--swpl-surface));
+  color: rgb(var(--swpl-rgb));
+}
+html[data-theme="dark"] .container .stage-inline-meta,
+html[data-theme="dark"] .container #device-grid-readout { color: var(--swpl-muted); background: var(--swpl-surface-soft); }
+html[data-theme="dark"] .container .pagination button {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .pagination button:hover:not(:disabled) { background: var(--swpl-surface-strong); color: var(--swpl-text); }
+html[data-theme="dark"] .container #page-info {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border);
+}
+
+/* XML panel */
+html[data-theme="dark"] .container .xml-panel { background: transparent; }
+html[data-theme="dark"] .container .xml-content,
+html[data-theme="dark"] .container .xml-editor {
+  background: var(--swpl-surface);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .xml-controls button {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .container .xml-controls button:hover { background: var(--swpl-surface-strong); color: var(--swpl-text); }
+html[data-theme="dark"] .container .xml-editor-state.is-synced {
+  background: color-mix(in srgb, #34d399 14%, var(--swpl-surface));
+  color: #6ee7b7;
+}
+html[data-theme="dark"] .container .xml-editor-state:not(.is-synced) {
+  background: color-mix(in srgb, #fbbf24 14%, var(--swpl-surface));
+  color: #fcd34d;
+}
+
+/* Modals, menus, toasts (outside .container in DOM) */
+html[data-theme="dark"] .modal-content {
+  background: var(--swpl-surface);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .modal-content h2,
+html[data-theme="dark"] .modal-content h3,
+html[data-theme="dark"] .modal-content h4 { color: var(--swpl-text); }
+html[data-theme="dark"] .modal-content p,
+html[data-theme="dark"] .modal-content li { color: var(--swpl-text-2); }
+html[data-theme="dark"] .modal-content label { color: var(--swpl-muted); }
+html[data-theme="dark"] .modal-content select,
+html[data-theme="dark"] .modal-content input[type="text"],
+html[data-theme="dark"] .modal-content input[type="number"],
+html[data-theme="dark"] .modal-content textarea {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .modal-content select option { background: var(--swpl-surface); color: var(--swpl-text); }
+html[data-theme="dark"] .modal-content .close { color: var(--swpl-muted); }
+html[data-theme="dark"] .modal-content .close:hover { color: var(--swpl-text); }
+html[data-theme="dark"] .modal-content button:not(.primary):not(.btn-accent):not(.folder-btn-save) {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .modal-content button.primary {
+  background: rgb(var(--swpl-rgb));
+  color: #221004;
+  border-color: transparent;
+}
+html[data-theme="dark"] .modal-content code {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+}
+html[data-theme="dark"] .search-results {
+  background: var(--swpl-surface);
+  border-color: var(--swpl-border-strong);
+  color: var(--swpl-text);
+}
+html[data-theme="dark"] .search-results > * { color: var(--swpl-text-2); }
+html[data-theme="dark"] .context-menu {
+  background: var(--swpl-surface);
+  border-color: var(--swpl-border-strong);
+  box-shadow: var(--swpl-shadow);
+}
+html[data-theme="dark"] .context-menu-item { color: var(--swpl-text-2); }
+html[data-theme="dark"] .context-menu-item:hover { background: var(--swpl-surface-strong); color: var(--swpl-text); }
+
+html[data-theme="dark"] .guide-flow-card,
+html[data-theme="dark"] .guide-card,
+html[data-theme="dark"] .guide-ui-panel,
+html[data-theme="dark"] .guide-preview-card,
+html[data-theme="dark"] .guide-callout,
+html[data-theme="dark"] .guide-shortcut-row {
+  background: var(--swpl-surface-soft);
+  border-color: var(--swpl-border);
+}
+html[data-theme="dark"] .guide-keycap,
+html[data-theme="dark"] .guide-section-chip {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .guide-quick-nav a {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+
+html[data-theme="dark"] .toast-container .toast,
+html[data-theme="dark"] .toast {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+
+/* Layout Editor dark skin, pass 2: originals styled via id selectors */
+html[data-theme="dark"] .container #toggle-xml-btn {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] #cancel-add-app,
+html[data-theme="dark"] #confirm-no,
+html[data-theme="dark"] #move-page-cancel,
+html[data-theme="dark"] #folder-drop-cancel-btn,
+html[data-theme="dark"] #cancel-paste-xml,
+html[data-theme="dark"] #cancel-raw-xml,
+html[data-theme="dark"] #close-compare-btn,
+html[data-theme="dark"] #compare-swap-btn,
+html[data-theme="dark"] #folder-drop-swap-btn,
+html[data-theme="dark"] #folder-drop-merge-btn {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] .move-page-hint {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border);
+}
+html[data-theme="dark"] .compare-source-tabs { background: var(--swpl-surface-soft); }
+html[data-theme="dark"] .compare-tab { color: var(--swpl-muted); background: transparent; }
+html[data-theme="dark"] .compare-tab.is-active {
+  background: var(--swpl-surface-strong);
+  color: var(--swpl-text);
+}
+html[data-theme="dark"] .compare-auto-badge {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 16%, var(--swpl-surface));
+  color: rgb(var(--swpl-rgb));
+}
+html[data-theme="dark"] .compare-source-label { color: var(--swpl-muted); }
+html[data-theme="dark"] .diff-side-header { background: var(--swpl-surface-strong); color: var(--swpl-text-2); }
+html[data-theme="dark"] #folder-save-btn,
+html[data-theme="dark"] #folder-reset-btn,
+html[data-theme="dark"] #folder-prev-btn,
+html[data-theme="dark"] #folder-next-btn {
+  background: var(--swpl-surface-soft);
+  color: var(--swpl-text-2);
+  border-color: var(--swpl-border-strong);
+}
+html[data-theme="dark"] #folder-page-info,
+html[data-theme="dark"] .folder-page-pill { color: var(--swpl-text-2); background: var(--swpl-surface-soft); }
+html[data-theme="dark"] .folder-modal-item-count { color: var(--swpl-muted); }
+html[data-theme="dark"] .folder-grid-wrapper { background: var(--swpl-surface-soft); }
+html[data-theme="dark"] .guide-callout,
+html[data-theme="dark"] .guide-callout strong,
+html[data-theme="dark"] .guide-callout-soft,
+html[data-theme="dark"] .guide-callout-soft strong { color: var(--swpl-text-2); }
+html[data-theme="dark"] .guide-shortcut-label,
+html[data-theme="dark"] .guide-modal-content figcaption { color: var(--swpl-text-2); }
+html[data-theme="dark"] .guide-preview-card img { background: var(--swpl-surface-strong); }
+html[data-theme="dark"] .help-contact-mark { color: rgb(var(--swpl-rgb)); }
+html[data-theme="dark"] .help-contact-email a { color: var(--swpl-text); }
+html[data-theme="dark"] .help-modal-intro { color: var(--swpl-muted); }
+
+/* CF Helper base text color (its stylesheet hardcodes a dark oklch) */
+html[data-theme="dark"] .app { color: var(--swpl-text); }
+
+/* ====================== IMAGE COMPRESSION ====================== */
+/* img-press is fully token-driven and ships its own dark mode.
+   Align its accent + fonts (light) and neutrals (dark) to the hub. */
+body:has(.compare),
+body:has(.ambient) {
+  font-family: var(--swpl-font);
+}
+html:not([data-theme="dark"]) {
+  --accent: var(--swpl-ink);
+  --accent-2: var(--swpl-fill);
+  --accent-soft: var(--swpl-accent-soft);
+  --accent-border: color-mix(in srgb, var(--swpl-fill) 30%, transparent);
+  --accent-strong-border: color-mix(in srgb, var(--swpl-fill) 45%, transparent);
+  --accent-fill-a: var(--swpl-fill);
+  --accent-fill-b: var(--swpl-ink);
+  --accent-ring: color-mix(in srgb, var(--swpl-fill) 22%, transparent);
+}
+html[data-theme="dark"] body:has(.ambient) {
+  --bg: #0e0e10;
+  --surface: #17171a;
+  --surface-2: #1c1c20;
+  --surface-3: #232328;
+  --text: #f0f0f2;
+  --text-muted: #9a9aa4;
+  --text-soft: #80808a;
+  --accent: rgb(var(--swpl-rgb));
+  --accent-2: rgb(var(--swpl-rgb));
+  --accent-fill-a: rgb(var(--swpl-rgb));
+  --accent-fill-b: color-mix(in srgb, rgb(var(--swpl-rgb)) 70%, #3a1c04);
+  --accent-soft: color-mix(in srgb, rgb(var(--swpl-rgb)) 14%, transparent);
+  --accent-border: color-mix(in srgb, rgb(var(--swpl-rgb)) 30%, transparent);
+  --glow-cyan: color-mix(in srgb, rgb(var(--swpl-rgb)) 22%, transparent);
+}
+
+/* ====================== Shared chrome ====================== */
+.hub-back,
+.hub-back-link,
+.topbar__back {
+  font-family: var(--swpl-font);
+}
+
+.layout-gen-header h1,
+.preview-panel-copy h2,
+.tool-panel-header h2,
+.app-header h1 {
+  font-family: var(--swpl-font);
+}
+
+.tool-panel-kicker,
+.preview-panel-kicker,
+.eyebrow {
+  color: var(--swpl-ink);
+}
+html[data-theme="dark"] .tool-panel-kicker,
+html[data-theme="dark"] .preview-panel-kicker,
+html[data-theme="dark"] .eyebrow {
+  color: rgb(var(--swpl-rgb));
+}
+
+.tool-switcher summary {
+  font-family: var(--swpl-font);
+}
+
+/* Layout Editor header: theme toggle + tool switcher side by side */
+.tool-panel-header-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tool-panel-header-side .tool-switcher { flex: 1; min-width: 0; }

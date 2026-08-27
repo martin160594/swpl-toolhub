@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <title>Launcher XML Editor</title>
+  <g stroke="#0F172A" stroke-width="3" stroke-linejoin="round">
+    <rect x="5" y="5" width="24" height="24" rx="7" fill="#38BDF8" />
+    <rect x="35" y="5" width="24" height="24" rx="7" fill="#F59E0B" />
+    <rect x="5" y="35" width="24" height="24" rx="7" fill="#4ADE80" />
+    <rect x="35" y="35" width="24" height="24" rx="7" fill="#F472B6" />
+  </g>
+  <g fill="#FFFFFF" opacity=".28">
+    <path d="M12 9h10c2.2 0 4 1.8 4 4v2H8v-2c0-2.2 1.8-4 4-4Z" />
+    <path d="M42 9h10c2.2 0 4 1.8 4 4v2H38v-2c0-2.2 1.8-4 4-4Z" />
+    <path d="M12 39h10c2.2 0 4 1.8 4 4v2H8v-2c0-2.2 1.8-4 4-4Z" />
+    <path d="M42 39h10c2.2 0 4 1.8 4 4v2H38v-2c0-2.2 1.8-4 4-4Z" />
+  </g>
+</svg>
