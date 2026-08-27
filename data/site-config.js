@@ -17,7 +17,7 @@ window.SWPL_CONFIG = {
     "showSearch": true,
     "showCategories": true,
     "showFooter": true,
-    "showAdminLink": true
+    "showAdminLink": false
   },
   "theme": {
     "defaultMode": "system",

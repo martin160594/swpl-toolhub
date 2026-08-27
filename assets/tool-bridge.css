@@ -60,6 +60,13 @@ html[data-theme="dark"] {
     var(--swpl-bg);
 }
 
+/* Theme ripple (view transitions): the circular reveal owns the frame. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* ====================== Shared theme toggle ====================== */
 .swpl-theme-toggle {
   width: 36px;
@@ -491,10 +498,140 @@ html[data-theme="dark"] .help-contact-mark { color: rgb(var(--swpl-rgb)); }
 html[data-theme="dark"] .help-contact-email a { color: var(--swpl-text); }
 html[data-theme="dark"] .help-modal-intro { color: var(--swpl-muted); }
 
+/* ---- Light readability pass (WCAG AA) ----
+   The original tool stylesheets ship a few too-light grays and a blue
+   primary that lands under 4.5:1. Corrected here, hue preserved. */
+html:not([data-theme="dark"]) .tool-panel-kicker,
+html:not([data-theme="dark"]) .preview-panel-kicker,
+html:not([data-theme="dark"]) .guide-modal-kicker,
+html:not([data-theme="dark"]) .guide-section-kicker,
+html:not([data-theme="dark"]) .request-board-kicker {
+  color: color-mix(in srgb, var(--swpl-ink) 84%, #201207);
+}
+html:not([data-theme="dark"]) .help-toolbox-btn { color: #0a5da4; }
+html:not([data-theme="dark"]) .modal-content label,
+html:not([data-theme="dark"]) .compare-source-label { color: #3d4a5c; }
+html:not([data-theme="dark"]) .guide-modal-intro,
+html:not([data-theme="dark"]) .guide-card p,
+html:not([data-theme="dark"]) .guide-flow-card p,
+html:not([data-theme="dark"]) .guide-ui-panel p,
+html:not([data-theme="dark"]) .guide-preview-card figcaption,
+html:not([data-theme="dark"]) .help-modal-intro { color: #45525f; }
+html:not([data-theme="dark"]) .compare-auto-badge { color: #0a5da4; }
+html:not([data-theme="dark"]) .modal-content .modal-buttons button:not(.primary),
+html:not([data-theme="dark"]) .dialog-buttons button.secondary,
+html:not([data-theme="dark"]) .compare-tab { color: #3d4a5c; }
+
+/* Layout Editor toolbox action buttons, rebuilt for WCAG AA and the
+   accent lock. The stock styles pair white text with gradients that
+   start too bright (orange 2.4:1, green 1.8:1) and ship a violet
+   Compare. Originals use id selectors + !important, hence the weight. */
+html:not([data-theme="dark"]) .container .btn-accent,
+html:not([data-theme="dark"]) .container button#export-xml-btn {
+  background: linear-gradient(180deg, var(--swpl-fill), var(--swpl-ink)) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+html:not([data-theme="dark"]) .container .btn-accent:hover:not(:disabled),
+html:not([data-theme="dark"]) .container button#export-xml-btn:hover:not(:disabled) {
+  background: var(--swpl-ink) !important;
+  color: #ffffff !important;
+}
+html:not([data-theme="dark"]) .container .btn-success,
+html:not([data-theme="dark"]) .container button#save-changes-btn {
+  background: linear-gradient(180deg, #047857, #065f46) !important;
+  color: #ffffff !important;
+  border-color: rgba(4, 120, 87, 0.75) !important;
+}
+html:not([data-theme="dark"]) .container .btn-success:hover:not(:disabled),
+html:not([data-theme="dark"]) .container button#save-changes-btn:hover:not(:disabled) {
+  background: #065f46 !important;
+  color: #ffffff !important;
+}
+html:not([data-theme="dark"]) .container .btn-compare,
+html:not([data-theme="dark"]) .container button#compare-xml-btn {
+  background: var(--swpl-surface) !important;
+  color: var(--swpl-ink) !important;
+  border: 1px solid color-mix(in srgb, var(--swpl-fill) 45%, transparent) !important;
+}
+html:not([data-theme="dark"]) .container .btn-compare:hover:not(:disabled),
+html:not([data-theme="dark"]) .container button#compare-xml-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--swpl-fill) 10%, var(--swpl-surface)) !important;
+  color: var(--swpl-ink) !important;
+}
+html[data-theme="dark"] .container .btn-accent,
+html[data-theme="dark"] .container button#export-xml-btn {
+  background: rgb(var(--swpl-rgb)) !important;
+  color: #221004 !important;
+  border-color: transparent !important;
+}
+html[data-theme="dark"] .container .btn-accent:hover:not(:disabled),
+html[data-theme="dark"] .container button#export-xml-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 82%, #ffffff) !important;
+  color: #221004 !important;
+}
+html[data-theme="dark"] .container .btn-success,
+html[data-theme="dark"] .container button#save-changes-btn {
+  background: color-mix(in srgb, #34d399 18%, var(--swpl-surface)) !important;
+  color: #6ee7b7 !important;
+  border-color: color-mix(in srgb, #34d399 40%, transparent) !important;
+}
+html[data-theme="dark"] .container .btn-success:hover:not(:disabled),
+html[data-theme="dark"] .container button#save-changes-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #34d399 28%, var(--swpl-surface)) !important;
+  color: #a7f3d0 !important;
+}
+html[data-theme="dark"] .container .btn-compare,
+html[data-theme="dark"] .container button#compare-xml-btn {
+  background: var(--swpl-surface-soft) !important;
+  color: var(--swpl-text-2) !important;
+  border: 1px solid var(--swpl-border-strong) !important;
+}
+html[data-theme="dark"] .container .btn-compare:hover:not(:disabled),
+html[data-theme="dark"] .container button#compare-xml-btn:hover:not(:disabled) {
+  background: var(--swpl-surface-strong) !important;
+  color: var(--swpl-text) !important;
+}
+
+/* Accent primaries in modals: unify on the hub accent, which holds AA
+   with white text (the original blue was 3.2:1). */
+.modal-content button.primary {
+  background: var(--swpl-fill) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] .modal-content button.primary {
+  background: rgb(var(--swpl-rgb)) !important;
+  color: #221004 !important;
+}
+
+/* Dark modal neutrals: the originals use id-heavy selectors, so this
+   skin layer needs the final word. */
+html[data-theme="dark"] .modal-content .modal-buttons button:not(.primary),
+html[data-theme="dark"] .modal-content .dialog-buttons button:not(.primary),
+html[data-theme="dark"] #cancel-add-app,
+html[data-theme="dark"] #confirm-no,
+html[data-theme="dark"] #move-page-cancel,
+html[data-theme="dark"] #folder-drop-cancel-btn,
+html[data-theme="dark"] #cancel-paste-xml,
+html[data-theme="dark"] #cancel-raw-xml,
+html[data-theme="dark"] #close-compare-btn {
+  background: var(--swpl-surface-soft) !important;
+  color: var(--swpl-text-2) !important;
+  border-color: var(--swpl-border-strong) !important;
+}
+
 /* CF Helper base text color (its stylesheet hardcodes a dark oklch) */
 html[data-theme="dark"] .app { color: var(--swpl-text); }
 
 /* ====================== IMAGE COMPRESSION ====================== */
+/* Light readability: the stock soft-gray and success-green sit just
+   under WCAG AA on the light surfaces. Deepened, same hues. */
+html:not([data-theme="dark"]):has(.ambient) {
+  --text-soft: #5a6372;
+  --green: #047857;
+}
+
 /* img-press is fully token-driven and ships its own dark mode.
    Align its accent + fonts (light) and neutrals (dark) to the hub. */
 body:has(.compare),

@@ -57,6 +57,7 @@
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --grain-opacity: 0.05;
+  --glare: rgba(194, 65, 12, 0.05);
 }
 
 html[data-theme="dark"] {
@@ -89,6 +90,7 @@ html[data-theme="dark"] {
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.4), 0 20px 48px -18px rgba(0, 0, 0, 0.6);
 
   --grain-opacity: 0.07;
+  --glare: rgba(255, 255, 255, 0.07);
 }
 
 body[data-density="compact"] {
@@ -100,6 +102,9 @@ body[data-density="compact"] {
 
 /* ---------- Base + browser surfaces ---------- */
 * { box-sizing: border-box; }
+
+/* The hidden attribute must always win, even against display rules. */
+[hidden] { display: none !important; }
 
 html {
   scrollbar-gutter: stable;
@@ -199,13 +204,23 @@ input, textarea { caret-color: var(--accent); }
 body[data-hero-style="aurora"] .backdrop::before {
   content: "";
   position: absolute;
-  inset: -20% -10% auto -10%;
-  height: 78vh;
+  inset: -22% -12% auto -12%;
+  height: 82vh;
   background:
     radial-gradient(720px 460px at 10% 0%, var(--accent-glow), transparent 64%),
     radial-gradient(540px 400px at 78% 4%, var(--accent-glow), transparent 68%),
     radial-gradient(900px 520px at 45% -18%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
   filter: saturate(1.06);
+  will-change: transform;
+}
+
+/* Ambient drift: the aurora breathes, barely. */
+body[data-anim="on"][data-hero-style="aurora"] .backdrop::before {
+  animation: aurora-drift 26s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to { transform: translate3d(2%, 2.2%, 0) scale(1.07); }
 }
 
 body[data-pattern="on"] .backdrop::after {
@@ -468,6 +483,7 @@ body[data-cats="off"] .chips { display: none; }
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  perspective: 1400px;
 }
 body[data-cols="2"] .launchpad { grid-template-columns: repeat(2, 1fr); }
 body[data-cols="3"] .launchpad { grid-template-columns: repeat(3, 1fr); }
@@ -503,6 +519,30 @@ body[data-card-style="glass"] .lp-card {
   box-shadow: var(--shadow-lift);
 }
 .lp-card:active { transform: translateY(-1px) scale(0.995); }
+
+/* Pointer-fine devices: dampened 3D tilt driven by --rx/--ry from JS. */
+@media (hover: hover) and (pointer: fine) {
+  body[data-anim="on"] .lp-card:hover {
+    transform: translateY(-4px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition-duration: 120ms;
+  }
+  body[data-anim="on"] .lp-card:active {
+    transform: translateY(-1px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(0.99);
+  }
+}
+
+/* Glare sheen tracking the same pointer position as the spotlight. */
+.lp-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), var(--glare), transparent 65%);
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+.lp-card:hover::after { opacity: 1; }
 
 /* Cursor spotlight: a 1px gradient border that follows the pointer. */
 .lp-card::before {
@@ -752,29 +792,40 @@ html[data-theme="light"] .badge-live { color: var(--accent-strong); }
 }
 .tagchip::before { content: "#"; opacity: 0.55; margin-right: 1px; }
 
-/* ---------- Entrance choreography (one authored sequence) ---------- */
-body[data-anim="on"] .hero-title {
+/* ---------- Entrance choreography (boot only, one authored sequence) ----------
+   Gated on body:not(.is-booted): after boot, re-renders (search, filters)
+   hand motion to the View Transitions morph instead of replaying entrances. */
+body[data-anim="on"]:not(.is-booted) .hero-title {
   animation: hero-in 700ms var(--ease-out) both;
 }
-body[data-anim="on"] .hero-tagline {
+body[data-anim="on"]:not(.is-booted) .hero-tile {
+  animation: tile-in 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 620ms both;
+}
+body[data-anim="on"]:not(.is-booted) .hero-tagline {
   animation: rise-in 640ms var(--ease-out) 90ms both;
 }
-body[data-anim="on"] .finder {
+body[data-anim="on"]:not(.is-booted) .finder {
   animation: rise-in 620ms var(--ease-out) 160ms both;
 }
-body[data-anim="on"] .lp-card {
+body[data-anim="on"]:not(.is-booted) .lp-card {
   animation: card-in 560ms var(--ease-out) both;
   animation-delay: calc(240ms + var(--i, 0) * 65ms);
 }
-body[data-anim="on"] .registry,
-body[data-anim="on"] .group-title {
-  animation: rise-in 620ms var(--ease-out) both;
-  animation-delay: calc(340ms + var(--i, 0) * 40ms);
+body[data-anim="on"]:not(.is-booted) .group-title {
+  animation: rise-in 560ms var(--ease-out) 380ms both;
+}
+body[data-anim="on"]:not(.is-booted) .reg-row {
+  animation: rise-in 480ms var(--ease-out) both;
+  animation-delay: calc(430ms + var(--i, 0) * 45ms);
 }
 
 @keyframes hero-in {
   from { opacity: 0; transform: translateY(18px); filter: blur(7px); }
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(-0.03em) scale(0); }
+  to { opacity: 1; transform: translateY(-0.03em) scale(1); }
 }
 @keyframes card-in {
   from { opacity: 0; transform: translateY(16px) scale(0.98); filter: blur(4px); }
@@ -785,21 +836,64 @@ body[data-anim="on"] .group-title {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ---------- View transitions (filter morph + theme ripple) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) {
+    animation-duration: 340ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* During the theme ripple, cards must stay part of the root snapshot. */
+body.vt-root-only .lp-card,
+body.vt-root-only .reg-row {
+  view-transition-name: none !important;
+}
+
 /* ---------- Empty state ---------- */
 .empty {
   padding: var(--sp-6) 1rem;
   text-align: center;
   color: var(--muted);
 }
-.empty .icn { width: 34px; height: 34px; opacity: 0.6; }
-.empty p { margin: 0.8rem 0 1.1rem; }
-.empty button {
-  color: var(--accent);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.empty-tile {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
 }
-html[data-theme="light"] .empty button { color: var(--accent-strong); }
+.empty .icn { width: 26px; height: 26px; }
+.empty p {
+  margin: 1rem 0 1.2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-2);
+}
+.empty button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+.empty button:hover { border-color: var(--accent-line); }
+.empty button:active { transform: scale(0.97); }
 
 /* ---------- Dialog ---------- */
 dialog.tool-dialog {
@@ -820,16 +914,28 @@ dialog.tool-dialog::backdrop {
 html[data-theme="dark"] dialog.tool-dialog::backdrop { background: rgba(0, 0, 0, 0.58); }
 
 body[data-anim="on"] dialog.tool-dialog[open] {
-  animation: dlg-in 300ms var(--ease-out);
+  animation: dlg-in 320ms var(--ease-out);
 }
 body[data-anim="on"] dialog.tool-dialog[open]::backdrop {
-  animation: fade-in 240ms ease;
+  animation: fade-in 260ms ease;
+}
+body[data-anim="on"] dialog.tool-dialog.is-closing[open] {
+  animation: dlg-out 170ms ease-in forwards;
+}
+body[data-anim="on"] dialog.tool-dialog.is-closing[open]::backdrop {
+  animation: fade-out 170ms ease forwards;
 }
 @keyframes dlg-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.96); filter: blur(5px); }
-  to { opacity: 1; transform: none; filter: blur(0); }
+  0% { opacity: 0; transform: translateY(18px) scale(0.955); filter: blur(6px); }
+  62% { filter: blur(0); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes dlg-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(10px) scale(0.97); filter: blur(3px); }
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
 
 .dlg-inner {
   position: relative;
@@ -1051,8 +1157,10 @@ body[data-footer="off"] .site-footer { display: none; }
   }
 }
 body[data-anim="off"] .hero-title,
+body[data-anim="off"] .hero-tile,
 body[data-anim="off"] .hero-tagline,
 body[data-anim="off"] .finder,
 body[data-anim="off"] .lp-card,
-body[data-anim="off"] .registry,
-body[data-anim="off"] .group-title { animation: none; }
+body[data-anim="off"] .reg-row,
+body[data-anim="off"] .group-title,
+body[data-anim="off"] .backdrop::before { animation: none; }

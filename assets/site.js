@@ -208,12 +208,14 @@
       "--accent:" + a.light.accent + ";--accent-strong:" + a.light.strong + ";--on-accent:" + a.light.on + ";" +
       "--accent-soft:" + rgba(a.light.accent, 0.10) + ";--accent-line:" + rgba(a.light.accent, 0.30) + ";" +
       "--ring:" + rgba(a.light.accent, 0.40) + ";--accent-glow:" + rgba(a.light.accent, 0.15) + ";" +
+      "--glare:" + rgba(a.light.accent, 0.055) + ";" +
       "--radius:" + radius + "px;--radius-sm:" + Math.max(4, radius - 5) + "px;" +
       "--font-display:" + font.display + ";--font-body:" + font.body + ";--font-mono:" + font.mono + ";}" +
       'html[data-theme="dark"]{' +
       "--accent:" + a.dark.accent + ";--accent-strong:" + a.dark.strong + ";--on-accent:" + a.dark.on + ";" +
       "--accent-soft:" + rgba(a.dark.accent, 0.13) + ";--accent-line:" + rgba(a.dark.accent, 0.34) + ";" +
-      "--ring:" + rgba(a.dark.accent, 0.45) + ";--accent-glow:" + rgba(a.dark.accent, 0.12) + ";}";
+      "--ring:" + rgba(a.dark.accent, 0.45) + ";--accent-glow:" + rgba(a.dark.accent, 0.12) + ";" +
+      "--glare:rgba(255, 255, 255, 0.07);}";
 
     var styleNode = document.getElementById("swpl-dynamic");
     if (!styleNode) {
@@ -329,8 +331,11 @@
       b.appendChild(el("span", "chip-count", String(count)));
       b.addEventListener("click", function () {
         state.category = id;
-        renderChips(data);
-        renderGrid(data);
+        document.body.classList.add("is-booted");
+        withViewTransition(function () {
+          renderChips(data);
+          renderGrid(data);
+        });
       });
       return b;
     }
@@ -347,6 +352,34 @@
     if (icon) b.appendChild(iconNode(icon));
     b.appendChild(el("span", null, label));
     return b;
+  }
+
+  /* View-transition plumbing: each tool keeps a stable name so filter
+     changes morph cards to their new positions instead of repainting. */
+  function vtName(tool) {
+    var safe = String(tool.id || "tool").replace(/[^a-zA-Z0-9_-]/g, "");
+    return "t-" + (safe || "tool");
+  }
+
+  function animEnabled() {
+    return document.body.dataset.anim === "on";
+  }
+
+  function withViewTransition(update) {
+    // Hidden documents get no rendering opportunities, so a view transition
+    // would hold the update callback hostage. Render directly instead.
+    if (
+      document.startViewTransition &&
+      document.visibilityState === "visible" &&
+      animEnabled() &&
+      document.body.classList.contains("is-booted")
+    ) {
+      try {
+        document.startViewTransition(update);
+        return;
+      } catch (e) { /* fall through */ }
+    }
+    update();
   }
 
   /* Ghost mark: the tool's own icon, oversized, as the card's signature.
@@ -381,6 +414,7 @@
     var card = el("button", "lp-card");
     card.type = "button";
     card.style.setProperty("--i", String(index));
+    card.style.viewTransitionName = vtName(tool);
     card.setAttribute("aria-haspopup", "dialog");
     card.dataset.toolId = tool.id;
 
@@ -413,9 +447,11 @@
     return card;
   }
 
-  function regRow(tool, cfg, data) {
+  function regRow(tool, cfg, data, index) {
     var row = el("button", "reg-row");
     row.type = "button";
+    row.style.setProperty("--i", String(index));
+    row.style.viewTransitionName = vtName(tool);
     row.setAttribute("aria-haspopup", "dialog");
     row.dataset.toolId = tool.id;
 
@@ -491,8 +527,8 @@
       if (!list.length) return;
       var reg = el("div", "registry");
       reg.style.setProperty("--i", String(blockIndex++));
-      list.forEach(function (tool) {
-        reg.appendChild(regRow(tool, cfg, data));
+      list.forEach(function (tool, rowIndex) {
+        reg.appendChild(regRow(tool, cfg, data, rowIndex));
       });
       grid.appendChild(reg);
     }
@@ -524,8 +560,9 @@
     }
   }
 
-  /* Cursor spotlight on launchpad cards: one delegated listener,
-     rAF-throttled, writes --mx/--my consumed by the border gradient. */
+  /* Cursor spotlight + dampened 3D tilt on launchpad cards: one delegated,
+     throttled listener writes --mx/--my (spotlight, glare) and --rx/--ry
+     (tilt) consumed by CSS. */
   function bindSpotlight() {
     var grid = document.getElementById("tool-grid");
     if (!grid) return;
@@ -538,8 +575,18 @@
       last = now;
       var rect = card.getBoundingClientRect();
       if (!rect.width) return;
-      card.style.setProperty("--mx", ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + "%");
-      card.style.setProperty("--my", ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + "%");
+      var px = (e.clientX - rect.left) / rect.width;
+      var py = (e.clientY - rect.top) / rect.height;
+      card.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+      card.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+      card.style.setProperty("--rx", ((py - 0.5) * -4.5).toFixed(2) + "deg");
+      card.style.setProperty("--ry", ((px - 0.5) * 5.5).toFixed(2) + "deg");
+    });
+    grid.addEventListener("pointerout", function (e) {
+      var card = e.target.closest ? e.target.closest(".lp-card") : null;
+      if (!card || card.contains(e.relatedTarget)) return;
+      card.style.setProperty("--rx", "0deg");
+      card.style.setProperty("--ry", "0deg");
     });
   }
 
@@ -548,8 +595,21 @@
 
   function closeToolDialog() {
     var dlg = document.getElementById("tool-dialog");
-    if (dlg && dlg.open) dlg.close();
-    if (currentDialogCleanup) currentDialogCleanup();
+    if (!dlg) return;
+    if (dlg.classList.contains("is-closing")) return;
+
+    function finish() {
+      dlg.classList.remove("is-closing");
+      if (dlg.open) dlg.close();
+      if (currentDialogCleanup) currentDialogCleanup();
+    }
+
+    if (dlg.open && animEnabled()) {
+      dlg.classList.add("is-closing");
+      setTimeout(finish, 175);
+    } else {
+      finish();
+    }
   }
 
   function bindDialogShell() {
@@ -561,14 +621,20 @@
     // Native close event (Esc, form method=dialog). Some embedded browsers
     // swallow it, so explicit close paths also run the cleanup directly.
     dlg.addEventListener("close", function () {
+      dlg.classList.remove("is-closing");
       if (currentDialogCleanup) currentDialogCleanup();
     });
-    dlg.addEventListener("cancel", function () {
-      setTimeout(function () { if (currentDialogCleanup) currentDialogCleanup(); }, 0);
+    // Esc: intercept the native instant close so the exit animation plays.
+    dlg.addEventListener("cancel", function (e) {
+      if (dlg.open && animEnabled() && !dlg.classList.contains("is-closing")) {
+        e.preventDefault();
+        closeToolDialog();
+      }
     });
+    // Safety net for environments that never fire cancel/close events.
     dlg.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
-        setTimeout(function () { if (currentDialogCleanup) currentDialogCleanup(); }, 0);
+        setTimeout(function () { if (currentDialogCleanup) currentDialogCleanup(); }, 260);
       }
     });
   }
@@ -702,12 +768,23 @@
     var clear = document.getElementById("search-clear");
     if (!input) return;
 
+    var syncTimer = 0;
+
     function sync() {
       state.query = input.value.trim();
       box.classList.toggle("has-value", !!state.query);
-      renderGrid(getData());
+      withViewTransition(function () {
+        renderGrid(getData());
+      });
     }
-    input.addEventListener("input", sync);
+
+    function syncSoon() {
+      document.body.classList.add("is-booted");
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(sync, 90);
+    }
+
+    input.addEventListener("input", syncSoon);
     input.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && input.value) {
         input.value = "";
@@ -739,18 +816,62 @@
       state.category = "all";
       box.classList.remove("has-value");
       var data = getData();
-      renderChips(data);
-      renderGrid(data);
+      withViewTransition(function () {
+        renderChips(data);
+        renderGrid(data);
+      });
     });
   }
 
-  function bindThemeToggle(getData) {
+  function bindThemeToggle() {
     var btn = document.getElementById("theme-toggle");
     if (!btn) return;
     btn.addEventListener("click", function () {
       var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
       try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* private mode */ }
-      applyTheme(next);
+
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!document.startViewTransition || reduce || !animEnabled() || document.visibilityState !== "visible") {
+        applyTheme(next);
+        return;
+      }
+
+      // Circular reveal from the toggle button. Cards drop their own
+      // view-transition names for this one so the ripple owns the frame.
+      document.body.classList.add("vt-root-only");
+      var vt;
+      try {
+        vt = document.startViewTransition(function () { applyTheme(next); });
+      } catch (e) {
+        document.body.classList.remove("vt-root-only");
+        applyTheme(next);
+        return;
+      }
+      vt.ready.then(function () {
+        var r = btn.getBoundingClientRect();
+        var x = r.left + r.width / 2;
+        var y = r.top + r.height / 2;
+        var maxR = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y)
+        );
+        document.documentElement.animate(
+          {
+            clipPath: [
+              "circle(0px at " + x + "px " + y + "px)",
+              "circle(" + Math.ceil(maxR) + "px at " + x + "px " + y + "px)"
+            ]
+          },
+          {
+            duration: 520,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            pseudoElement: "::view-transition-new(root)"
+          }
+        );
+      }).catch(function () { /* transition skipped */ });
+      vt.finished.finally(function () {
+        document.body.classList.remove("vt-root-only");
+      });
     });
   }
 
@@ -782,6 +903,12 @@
     bindThemeToggle();
     openFromHash(data);
 
+    // Entrance choreography runs once; afterwards re-renders morph via
+    // view transitions instead of replaying the boot sequence.
+    setTimeout(function () {
+      document.body.classList.add("is-booted");
+    }, animEnabled() ? 1150 : 0);
+
     window.addEventListener("hashchange", function () {
       var dlg = document.getElementById("tool-dialog");
       if (dlg && dlg.open) return;
@@ -789,11 +916,14 @@
     });
 
     if (isDraftView) {
+      var draftRefresh = function () {
+        withViewTransition(function () { renderAll(); });
+      };
       window.addEventListener("storage", function (e) {
-        if (e.key === DRAFT_KEY || e.key === null) renderAll();
+        if (e.key === DRAFT_KEY || e.key === null) draftRefresh();
       });
       window.addEventListener("message", function (e) {
-        if (e.data && e.data.type === "swpl-draft-updated") renderAll();
+        if (e.data && e.data.type === "swpl-draft-updated") draftRefresh();
       });
     }
 

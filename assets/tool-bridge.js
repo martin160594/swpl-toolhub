@@ -81,12 +81,51 @@
     });
   }
 
+  /* Same circular theme reveal the hub uses, so the whole suite feels
+     like one product. Falls back to an instant swap where unsupported. */
+  function switchThemeWithRipple(btn, next) {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reduce || document.visibilityState !== "visible") {
+      applyTheme(next);
+      return;
+    }
+    var vt;
+    try {
+      vt = document.startViewTransition(function () { applyTheme(next); });
+    } catch (e) {
+      applyTheme(next);
+      return;
+    }
+    vt.ready.then(function () {
+      var r = btn.getBoundingClientRect();
+      var x = r.left + r.width / 2;
+      var y = r.top + r.height / 2;
+      var maxR = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      );
+      document.documentElement.animate(
+        {
+          clipPath: [
+            "circle(0px at " + x + "px " + y + "px)",
+            "circle(" + Math.ceil(maxR) + "px at " + x + "px " + y + "px)"
+          ]
+        },
+        {
+          duration: 520,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          pseudoElement: "::view-transition-new(root)"
+        }
+      );
+    }).catch(function () { /* transition skipped */ });
+  }
+
   function bind() {
     document.querySelectorAll("[data-swpl-theme-toggle]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
         try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-        applyTheme(next);
+        switchThemeWithRipple(btn, next);
       });
     });
   }
