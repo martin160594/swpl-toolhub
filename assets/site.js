@@ -275,7 +275,12 @@
     }
 
     var heroTitle = document.getElementById("hero-title");
-    if (heroTitle) heroTitle.textContent = s.title || "";
+    if (heroTitle) {
+      heroTitle.textContent = s.title || "";
+      var tile = el("span", "hero-tile");
+      tile.setAttribute("aria-hidden", "true");
+      heroTitle.appendChild(tile);
+    }
     var heroTagline = document.getElementById("hero-tagline");
     if (heroTagline) {
       heroTagline.textContent = s.tagline || "";
@@ -344,6 +349,110 @@
     return b;
   }
 
+  /* Ghost mark: the tool's own icon, oversized, as the card's signature.
+     Skipped for image icons (a giant photo would fight the layout). */
+  function ghostNode(tool, cls) {
+    var icon = String(tool.icon || "");
+    if (icon.indexOf("img:") === 0) return null;
+    var ghost = el("span", cls);
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.appendChild(toolVisual(tool));
+    return ghost;
+  }
+
+  function metaNodes(tool, cfg, tagLimit) {
+    var nodes = [];
+    if (cfg.layout.showBadges) {
+      if (tool.platform === "web") nodes.push(badgeNode("badge-live", "globe-simple", "Runs in browser"));
+      else if (tool.platform === "windows") nodes.push(badgeNode("", "desktop", "Windows"));
+    }
+    if (cfg.layout.showVersions && tool.version) {
+      nodes.push(el("span", "badge-version", "v" + String(tool.version).replace(/^v/i, "")));
+    }
+    if (cfg.layout.showTags && Array.isArray(tool.tags)) {
+      tool.tags.slice(0, tagLimit).forEach(function (tag) {
+        nodes.push(el("span", "tagchip", tag));
+      });
+    }
+    return nodes;
+  }
+
+  function lpCard(tool, cfg, data, index) {
+    var card = el("button", "lp-card");
+    card.type = "button";
+    card.style.setProperty("--i", String(index));
+    card.setAttribute("aria-haspopup", "dialog");
+    card.dataset.toolId = tool.id;
+
+    var ghost = ghostNode(tool, "lp-ghost");
+    if (ghost) card.appendChild(ghost);
+
+    var top = el("div", "lp-top");
+    var iconWrap = el("span", "lp-icon");
+    iconWrap.appendChild(toolVisual(tool));
+    top.appendChild(iconWrap);
+
+    var heading = el("span", "lp-heading");
+    heading.appendChild(el("span", "lp-name", tool.name || tool.id));
+    if (tool.tagline) heading.appendChild(el("span", "lp-tagline", tool.tagline));
+    top.appendChild(heading);
+
+    var arrow = el("span", "lp-arrow");
+    arrow.appendChild(iconNode("arrow-up-right"));
+    top.appendChild(arrow);
+    card.appendChild(top);
+
+    var meta = el("span", "lp-meta");
+    metaNodes(tool, cfg, 3).forEach(function (n) { meta.appendChild(n); });
+    if (meta.childNodes.length) card.appendChild(meta);
+
+    card.addEventListener("click", function () {
+      lastFocusedCard = card;
+      openDialog(tool, data);
+    });
+    return card;
+  }
+
+  function regRow(tool, cfg, data) {
+    var row = el("button", "reg-row");
+    row.type = "button";
+    row.setAttribute("aria-haspopup", "dialog");
+    row.dataset.toolId = tool.id;
+
+    var iconWrap = el("span", "reg-icon");
+    iconWrap.appendChild(toolVisual(tool));
+    row.appendChild(iconWrap);
+
+    var main = el("span", "reg-main");
+    main.appendChild(el("span", "reg-name", tool.name || tool.id));
+    if (tool.tagline) main.appendChild(el("span", "reg-tagline", tool.tagline));
+    row.appendChild(main);
+
+    var side = el("span", "reg-side");
+    if (cfg.layout.showTags && Array.isArray(tool.tags)) {
+      tool.tags.slice(0, 2).forEach(function (tag) {
+        side.appendChild(el("span", "tagchip", tag));
+      });
+    }
+    if (cfg.layout.showVersions && tool.version) {
+      side.appendChild(el("span", "badge-version", "v" + String(tool.version).replace(/^v/i, "")));
+    }
+    if (cfg.layout.showBadges) {
+      if (tool.platform === "web") side.appendChild(badgeNode("badge-live", "globe-simple", "Runs in browser"));
+      else if (tool.platform === "windows") side.appendChild(badgeNode("", "desktop", "Windows"));
+    }
+    var chevron = el("span", "reg-chevron");
+    chevron.appendChild(iconNode("arrow-up-right"));
+    side.appendChild(chevron);
+    row.appendChild(side);
+
+    row.addEventListener("click", function () {
+      lastFocusedCard = row;
+      openDialog(tool, data);
+    });
+    return row;
+  }
+
   function renderGrid(data) {
     var grid = document.getElementById("tool-grid");
     var empty = document.getElementById("empty-state");
@@ -364,70 +473,74 @@
     empty.hidden = true;
     grid.hidden = false;
 
-    var index = 0;
+    var featured = tools.filter(function (t) { return t.featured; });
+    var rest = tools.filter(function (t) { return !t.featured; });
+    var cardIndex = 0;
+    var blockIndex = 0;
 
-    function addCard(tool) {
-      var card = el("button", "card" + (tool.featured ? " is-featured" : ""));
-      card.type = "button";
-      card.style.setProperty("--i", String(index++));
-      card.setAttribute("aria-haspopup", "dialog");
-      card.dataset.toolId = tool.id;
-
-      var top = el("div", "card-top");
-      var iconWrap = el("span", "card-icon");
-      iconWrap.appendChild(toolVisual(tool));
-      top.appendChild(iconWrap);
-
-      var heading = el("span", "card-heading");
-      heading.appendChild(el("span", "card-name", tool.name || tool.id));
-      if (tool.tagline) heading.appendChild(el("span", "card-tagline", tool.tagline));
-      top.appendChild(heading);
-
-      var arrow = el("span", "card-arrow");
-      arrow.appendChild(iconNode("arrow-up-right"));
-      top.appendChild(arrow);
-      card.appendChild(top);
-
-      var meta = el("span", "card-meta");
-      if (cfg.layout.showBadges) {
-        if (tool.platform === "web") meta.appendChild(badgeNode("badge-live", "globe-simple", "Runs in browser"));
-        else if (tool.platform === "windows") meta.appendChild(badgeNode("", "desktop", "Windows"));
-      }
-      if (cfg.layout.showVersions && tool.version) {
-        meta.appendChild(el("span", "badge-version", "v" + String(tool.version).replace(/^v/i, "")));
-      }
-      if (cfg.layout.showTags && Array.isArray(tool.tags)) {
-        tool.tags.slice(0, 3).forEach(function (tag) {
-          meta.appendChild(el("span", "tagchip", tag));
-        });
-      }
-      if (meta.childNodes.length) card.appendChild(meta);
-
-      card.addEventListener("click", function () {
-        lastFocusedCard = card;
-        openDialog(tool, data);
+    function addLaunchpad(list) {
+      if (!list.length) return;
+      var lp = el("div", "launchpad");
+      list.forEach(function (tool) {
+        lp.appendChild(lpCard(tool, cfg, data, cardIndex++));
       });
-      grid.appendChild(card);
+      grid.appendChild(lp);
     }
+
+    function addRegistry(list) {
+      if (!list.length) return;
+      var reg = el("div", "registry");
+      reg.style.setProperty("--i", String(blockIndex++));
+      list.forEach(function (tool) {
+        reg.appendChild(regRow(tool, cfg, data));
+      });
+      grid.appendChild(reg);
+    }
+
+    function addGroupTitle(cat, count) {
+      var title = el("h2", "group-title");
+      title.style.setProperty("--i", String(blockIndex));
+      if (cat.icon) title.appendChild(iconNode(cat.icon));
+      title.appendChild(el("span", null, cat.name));
+      title.appendChild(el("span", "group-count", String(count)));
+      grid.appendChild(title);
+    }
+
+    addLaunchpad(featured);
 
     if (cfg.layout.groupByCategory && cfg.categories.length) {
       cfg.categories.forEach(function (cat) {
-        var inCat = tools.filter(function (t) { return t.category === cat.id; });
+        var inCat = rest.filter(function (t) { return t.category === cat.id; });
         if (!inCat.length) return;
-        var title = el("h2", "group-title");
-        if (cat.icon) title.appendChild(iconNode(cat.icon));
-        title.appendChild(el("span", null, cat.name));
-        title.appendChild(el("span", "group-count", String(inCat.length)));
-        grid.appendChild(title);
-        inCat.forEach(addCard);
+        addGroupTitle(cat, inCat.length);
+        addRegistry(inCat);
       });
-      var uncategorised = tools.filter(function (t) {
+      var uncategorised = rest.filter(function (t) {
         return !cfg.categories.some(function (c) { return c.id === t.category; });
       });
-      uncategorised.forEach(addCard);
+      addRegistry(uncategorised);
     } else {
-      tools.forEach(addCard);
+      addRegistry(rest);
     }
+  }
+
+  /* Cursor spotlight on launchpad cards: one delegated listener,
+     rAF-throttled, writes --mx/--my consumed by the border gradient. */
+  function bindSpotlight() {
+    var grid = document.getElementById("tool-grid");
+    if (!grid) return;
+    var last = 0;
+    grid.addEventListener("pointermove", function (e) {
+      var card = e.target.closest ? e.target.closest(".lp-card") : null;
+      if (!card) return;
+      var now = (window.performance || Date).now();
+      if (now - last < 16) return;
+      last = now;
+      var rect = card.getBoundingClientRect();
+      if (!rect.width) return;
+      card.style.setProperty("--mx", ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + "%");
+      card.style.setProperty("--my", ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + "%");
+    });
   }
 
   /* ---------- Dialog ---------- */
@@ -467,6 +580,9 @@
 
     dlg.textContent = "";
     var inner = el("div", "dlg-inner");
+
+    var dlgGhost = ghostNode(tool, "dlg-ghost");
+    if (dlgGhost) inner.appendChild(dlgGhost);
 
     var head = el("div", "dlg-head");
     var icon = el("span", "dlg-icon");
@@ -661,6 +777,7 @@
     applyTheme(resolveTheme(data.config));
 
     bindDialogShell();
+    bindSpotlight();
     bindSearch(function () { return currentData(); });
     bindThemeToggle();
     openFromHash(data);

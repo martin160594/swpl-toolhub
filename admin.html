@@ -208,11 +208,11 @@
         <!-- ============ Layout ============ -->
         <section class="panel" data-panel-id="layout">
           <h2 class="panel-title">Grid layout</h2>
-          <p class="panel-sub">How the tool cards are arranged and what each card shows.</p>
+          <p class="panel-sub">Featured tools render as large launchpad cards; the rest stack as compact registry rows underneath. Toggle Featured per tool in the Tools panel.</p>
 
           <div class="field-row">
             <div class="field">
-              <label for="f-columns">Columns</label>
+              <label for="f-columns">Launchpad columns</label>
               <select id="f-columns" data-bind="layout.columns">
                 <option value="auto">Auto fit</option>
                 <option value="2">2 columns</option>
@@ -242,7 +242,7 @@
           <div class="panel-head-row">
             <div>
               <h2 class="panel-title">Tools</h2>
-              <p class="panel-sub">Drag to reorder. Hidden tools stay here but leave the public page.</p>
+              <p class="panel-sub">Drag to reorder. Featured tools become large launchpad cards; the rest render as compact rows. Hidden tools stay here but leave the public page.</p>
             </div>
             <button type="button" class="btn btn-primary" id="btn-add-tool">Add tool</button>
           </div>
