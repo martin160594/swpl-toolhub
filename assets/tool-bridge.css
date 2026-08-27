@@ -171,6 +171,45 @@ html[data-theme="dark"] .container {
    The original stylesheet hardcodes its light "Soft Daylight" colors, so the
    chrome gets an explicit dark pass here. The device canvas intentionally
    stays light: it mimics a phone home screen. */
+
+/* Panel shells: the stock white panel gradients flip to dark surfaces.
+   The originals paint via background-image with !important-heavy rules,
+   hence the weight here. */
+html[data-theme="dark"] .container .tool-panel,
+html[data-theme="dark"] .container .grid-panel,
+html[data-theme="dark"] .container .xml-panel {
+  background: var(--swpl-surface) !important;
+  border-color: var(--swpl-border) !important;
+  box-shadow: var(--swpl-shadow-soft) !important;
+}
+html[data-theme="dark"] .container .workspace-shell { background: transparent !important; }
+html[data-theme="dark"] .container .workspace-stage {
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, rgb(var(--swpl-rgb)) 8%, transparent), transparent 42%),
+    linear-gradient(180deg, #0b0b0d, #131316) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+/* The canvas stays light on purpose (it previews a phone home screen);
+   a real bezel makes that intent legible on the dark stage. */
+html[data-theme="dark"] .container .device-frame {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow:
+    0 0 0 6px #1b1b1f,
+    0 0 0 7px rgba(255, 255, 255, 0.09),
+    0 26px 60px -28px rgba(0, 0, 0, 0.85) !important;
+}
+html[data-theme="dark"] .container #toggle-xml-btn,
+html[data-theme="dark"] .container button#toggle-xml-btn,
+html[data-theme="dark"] .layout-controls button#toggle-xml-btn {
+  background: var(--swpl-surface-strong) !important;
+  color: var(--swpl-text) !important;
+  border-color: var(--swpl-border-strong) !important;
+}
+html[data-theme="dark"] .swpl-theme-toggle {
+  background: var(--swpl-surface-soft) !important;
+  border-color: var(--swpl-border-strong) !important;
+  color: var(--swpl-muted) !important;
+}
 html[data-theme="dark"] .container,
 html[data-theme="dark"] .container h2,
 html[data-theme="dark"] .container h3,
@@ -269,6 +308,17 @@ html[data-theme="dark"] .container .tool-switcher__menu {
 html[data-theme="dark"] .container .tool-switcher__menu a { color: var(--swpl-text-2); }
 html[data-theme="dark"] .container .tool-switcher__menu a:hover,
 html[data-theme="dark"] .container .tool-switcher__menu a[aria-current="page"] { color: rgb(var(--swpl-rgb)); }
+
+/* Active item in every tool switcher: stock style is a light-blue chip */
+html[data-theme="dark"] .tool-switcher__menu a[aria-current="page"] {
+  background: color-mix(in srgb, rgb(var(--swpl-rgb)) 16%, var(--swpl-surface)) !important;
+  color: rgb(var(--swpl-rgb)) !important;
+  border-color: color-mix(in srgb, rgb(var(--swpl-rgb)) 35%, transparent) !important;
+}
+html[data-theme="dark"] .tool-switcher__menu a:hover:not([aria-current="page"]) {
+  background: var(--swpl-surface-strong) !important;
+  color: var(--swpl-text) !important;
+}
 
 html[data-theme="dark"] .container .status-pill,
 html[data-theme="dark"] .container #header-state-pill {
