@@ -567,34 +567,81 @@
     }
   }
 
-  /* Cursor spotlight + dampened 3D tilt on launchpad cards: one delegated,
-     throttled listener writes --mx/--my (spotlight, glare) and --rx/--ry
-     (tilt) consumed by CSS. */
-  function bindSpotlight() {
+  /* Pointer FX: the cursor is the light source.
+     - A soft ember glow (#cursor-light) trails the pointer across the page.
+     - Every launchpad card and registry border inside the grid catches the
+       light (--mx/--my per element); the hovered card also tilts (--rx/--ry)
+       and its layers drift apart (--pdx/--pdy).
+     One throttled listener; ~10 getBoundingClientRect per frame at most. */
+  function bindPointerFX() {
+    if (!window.matchMedia || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
     var grid = document.getElementById("tool-grid");
-    if (!grid) return;
+    var light = document.getElementById("cursor-light");
+    var tx = 0, ty = 0, cx = -1e4, cy = -1e4, raf = 0;
+
+    function lightLoop() {
+      raf = 0;
+      cx += (tx - cx) * 0.14;
+      cy += (ty - cy) * 0.14;
+      if (light) light.style.transform = "translate3d(" + (cx - 280).toFixed(1) + "px," + (cy - 280).toFixed(1) + "px,0)";
+      if (Math.abs(tx - cx) > 0.4 || Math.abs(ty - cy) > 0.4) {
+        raf = requestAnimationFrame(lightLoop);
+      }
+    }
+
     var last = 0;
-    grid.addEventListener("pointermove", function (e) {
-      var card = e.target.closest ? e.target.closest(".lp-card") : null;
-      if (!card) return;
+    document.addEventListener("pointermove", function (e) {
+      if (!animEnabled()) return;
+      document.body.classList.add("has-pointer");
+
+      tx = e.clientX;
+      ty = e.clientY;
+      if (cx === -1e4) { cx = tx; cy = ty; }
+      if (!raf && window.requestAnimationFrame) raf = requestAnimationFrame(lightLoop);
+
       var now = (window.performance || Date).now();
       if (now - last < 16) return;
       last = now;
-      var rect = card.getBoundingClientRect();
-      if (!rect.width) return;
-      var px = (e.clientX - rect.left) / rect.width;
-      var py = (e.clientY - rect.top) / rect.height;
-      card.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
-      card.style.setProperty("--my", (py * 100).toFixed(1) + "%");
-      card.style.setProperty("--rx", ((py - 0.5) * -4.5).toFixed(2) + "deg");
-      card.style.setProperty("--ry", ((px - 0.5) * 5.5).toFixed(2) + "deg");
+
+      if (!grid || grid.hidden) return;
+      var gridRect = grid.getBoundingClientRect();
+      var overGrid = e.clientY >= gridRect.top - 40 && e.clientY <= gridRect.bottom + 40 &&
+                     e.clientX >= gridRect.left - 40 && e.clientX <= gridRect.right + 40;
+      grid.classList.toggle("is-lit", overGrid);
+      if (!overGrid) return;
+
+      grid.querySelectorAll(".lp-card, .registry").forEach(function (el) {
+        var rect = el.getBoundingClientRect();
+        if (!rect.width) return;
+        var px = (e.clientX - rect.left) / rect.width;
+        var py = (e.clientY - rect.top) / rect.height;
+        el.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+        el.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+        if (el.classList.contains("lp-card") && px >= 0 && px <= 1 && py >= 0 && py <= 1) {
+          el.style.setProperty("--rx", ((py - 0.5) * -4.5).toFixed(2) + "deg");
+          el.style.setProperty("--ry", ((px - 0.5) * 5.5).toFixed(2) + "deg");
+          el.style.setProperty("--pdx", ((px - 0.5) * -5).toFixed(1) + "px");
+          el.style.setProperty("--pdy", ((py - 0.5) * -4).toFixed(1) + "px");
+        }
+      });
+    }, { passive: true });
+
+    document.addEventListener("pointerleave", function () {
+      document.body.classList.remove("has-pointer");
+      if (grid) grid.classList.remove("is-lit");
     });
-    grid.addEventListener("pointerout", function (e) {
-      var card = e.target.closest ? e.target.closest(".lp-card") : null;
-      if (!card || card.contains(e.relatedTarget)) return;
-      card.style.setProperty("--rx", "0deg");
-      card.style.setProperty("--ry", "0deg");
-    });
+
+    if (grid) {
+      grid.addEventListener("pointerout", function (e) {
+        var card = e.target.closest ? e.target.closest(".lp-card") : null;
+        if (!card || card.contains(e.relatedTarget)) return;
+        card.style.setProperty("--rx", "0deg");
+        card.style.setProperty("--ry", "0deg");
+        card.style.setProperty("--pdx", "0px");
+        card.style.setProperty("--pdy", "0px");
+      });
+    }
   }
 
   /* ---------- Dialog ---------- */
@@ -905,7 +952,7 @@
     applyTheme(resolveTheme(data.config));
 
     bindDialogShell();
-    bindSpotlight();
+    bindPointerFX();
     bindSearch(function () { return currentData(); });
     bindThemeToggle();
     openFromHash(data);

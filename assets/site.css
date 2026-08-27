@@ -233,6 +233,27 @@ body[data-pattern="on"] .backdrop::after {
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.14) 44%, transparent 76%);
 }
 
+/* The cursor carries the ember light: a soft glow trailing the pointer,
+   painted under the content so it illuminates the page floor. */
+.cursor-light {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow), transparent 64%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  will-change: transform;
+}
+body[data-anim="on"].has-pointer .cursor-light { opacity: 1; }
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .cursor-light { display: none; }
+}
+
 .grain {
   position: fixed;
   inset: 0;
@@ -310,6 +331,9 @@ html[data-theme="light"] .brand-word em { color: var(--accent-strong); }
 .iconbtn:active { transform: scale(0.96); }
 .iconbtn .icn { width: 18px; height: 18px; }
 
+.theme-toggle .icn { transition: transform 300ms var(--ease-out); }
+.theme-toggle:hover .icn-moon { transform: rotate(-18deg); }
+.theme-toggle:hover .icn-sun { transform: rotate(28deg); }
 .theme-toggle .icn-sun { display: none; }
 html[data-theme="dark"] .theme-toggle .icn-sun { display: block; }
 html[data-theme="dark"] .theme-toggle .icn-moon { display: none; }
@@ -341,6 +365,11 @@ html[data-theme="dark"] .theme-toggle .icn-moon { display: none; }
   background: linear-gradient(150deg, var(--accent), var(--accent-strong));
   box-shadow: 0 2px 14px var(--accent-glow), 0 1px 3px rgba(24, 20, 16, 0.2);
   transform: translateY(-0.03em);
+  transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+}
+.hero-title:hover .hero-tile {
+  transform: translateY(-0.03em) scale(1.22) rotate(9deg);
+  box-shadow: 0 3px 22px var(--accent-glow), 0 1px 3px rgba(24, 20, 16, 0.2);
 }
 
 .hero-tagline {
@@ -374,6 +403,9 @@ body[data-hero="off"] .finder { padding-top: var(--sp-5); }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--shadow-1);
   max-width: 620px;
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms var(--ease-out);
+}
+.search:hover {
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border-strong));
 }
 .search:focus-within {
   border-color: var(--accent-line);
@@ -436,8 +468,12 @@ body[data-cats="off"] .chips { display: none; }
   font-weight: 500;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
 }
-.chip:hover { border-color: var(--border-strong); color: var(--text); }
-.chip:active { transform: scale(0.97); }
+.chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.chip:active { transform: translateY(0) scale(0.96); }
 .chip.is-active {
   background: var(--text);
   border-color: var(--text);
@@ -544,14 +580,16 @@ body[data-card-style="glass"] .lp-card {
 }
 .lp-card:hover::after { opacity: 1; }
 
-/* Cursor spotlight: a 1px gradient border that follows the pointer. */
+/* Cursor spotlight: a 1px gradient border that follows the pointer.
+   While the pointer is anywhere over the grid (.grid.is-lit), every card
+   border catches a little of the light; the hovered card catches it all. */
 .lp-card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), var(--accent-line), transparent 72%);
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), var(--accent-line), transparent 72%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -560,7 +598,18 @@ body[data-card-style="glass"] .lp-card {
   transition: opacity 260ms ease;
   pointer-events: none;
 }
+.grid.is-lit .lp-card::before { opacity: 0.55; }
 .lp-card:hover::before, .lp-card:focus-visible::before { opacity: 1; }
+
+/* Depth: content and ghost drift on opposite layers while tilting. */
+@media (hover: hover) and (pointer: fine) {
+  body[data-anim="on"] .lp-top {
+    transition: transform 300ms var(--ease-out);
+  }
+  body[data-anim="on"] .lp-card:hover .lp-top {
+    transform: translate3d(var(--pdx, 0px), var(--pdy, 0px), 0);
+  }
+}
 
 /* Ghost icon: each tool's own mark, oversized, as the card's signature. */
 .lp-ghost {
@@ -578,7 +627,7 @@ html[data-theme="dark"] .lp-ghost { opacity: 0.055; }
 .lp-ghost .tool-emoji { font-size: 118px; line-height: 1; }
 .dlg-ghost .tool-emoji { font-size: 130px; line-height: 1; }
 .lp-card:hover .lp-ghost {
-  transform: translate(-7px, -7px) rotate(-3deg);
+  transform: translate3d(calc(var(--pdx, 0px) * -1.8 - 6px), calc(var(--pdy, 0px) * -1.8 - 6px), 0) rotate(-3deg);
   color: var(--accent);
   opacity: 0.10;
 }
@@ -590,6 +639,7 @@ html[data-theme="dark"] .lp-ghost { opacity: 0.055; }
 }
 
 .lp-icon {
+  position: relative;
   width: 48px;
   height: 48px;
   flex: none;
@@ -603,6 +653,21 @@ html[data-theme="dark"] .lp-ghost { opacity: 0.055; }
   overflow: hidden;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition: transform 240ms var(--ease-out);
+}
+/* One specular glint sweeps the tile when the card is entered. */
+.lp-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+body[data-anim="on"] .lp-card:hover .lp-icon::after {
+  animation: glint 700ms ease 90ms 1 both;
+}
+@keyframes glint {
+  to { transform: translateX(130%); }
 }
 html[data-theme="light"] .lp-icon { color: var(--accent-strong); }
 .lp-icon .icn { width: 25px; height: 25px; }
@@ -653,11 +718,30 @@ html[data-theme="light"] .lp-icon { color: var(--accent-strong); }
 
 /* ---------- Registry (everything not featured) ---------- */
 .registry {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) + 3px);
   background: var(--surface);
   overflow: hidden;
 }
+/* The registry border catches the cursor light too. */
+.registry::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), var(--accent-line), transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.grid.is-lit .registry::before { opacity: 0.8; }
 body[data-card-style="elevated"] .registry { box-shadow: var(--shadow-1); }
 body[data-card-style="glass"] .registry {
   background: color-mix(in srgb, var(--surface) 72%, transparent);
@@ -1093,9 +1177,17 @@ html[data-theme="light"] .dlg-icon { color: var(--accent-strong); }
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  transition: color 150ms ease;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-position: left calc(100% - 1px);
+  background-size: 0% 1px;
+  transition: color 150ms ease, background-size 260ms var(--ease-out);
+  padding-bottom: 2px;
 }
-.site-footer a:hover { color: var(--text); }
+.site-footer a:hover {
+  color: var(--text);
+  background-size: 100% 1px;
+}
 .site-footer .icn { width: 14px; height: 14px; }
 body[data-footer="off"] .site-footer { display: none; }
 
