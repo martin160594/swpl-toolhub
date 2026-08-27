@@ -118,6 +118,8 @@
         }
       );
     }).catch(function () { /* transition skipped */ });
+    if (vt.finished) vt.finished.catch(function () {});
+    if (vt.updateCallbackDone) vt.updateCallbackDone.catch(function () {});
   }
 
   function bind() {

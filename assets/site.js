@@ -375,7 +375,14 @@
       document.body.classList.contains("is-booted")
     ) {
       try {
-        document.startViewTransition(update);
+        var vt = document.startViewTransition(update);
+        // A skipped transition rejects these; observe them so a skip
+        // never surfaces as an unhandled rejection.
+        if (vt) {
+          if (vt.ready) vt.ready.catch(function () {});
+          if (vt.finished) vt.finished.catch(function () {});
+          if (vt.updateCallbackDone) vt.updateCallbackDone.catch(function () {});
+        }
         return;
       } catch (e) { /* fall through */ }
     }
@@ -869,9 +876,9 @@
           }
         );
       }).catch(function () { /* transition skipped */ });
-      vt.finished.finally(function () {
-        document.body.classList.remove("vt-root-only");
-      });
+      var unmark = function () { document.body.classList.remove("vt-root-only"); };
+      vt.finished.then(unmark, unmark);
+      if (vt.updateCallbackDone) vt.updateCallbackDone.catch(function () {});
     });
   }
 
