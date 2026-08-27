@@ -417,7 +417,8 @@ html[data-theme="light"] .nav-item.is-active { color: var(--accent-strong); }
   overflow: hidden;
 }
 .tool-row-icon .icn { width: 19px; height: 19px; }
-.tool-row-icon img { width: 100%; height: 100%; object-fit: cover; }
+.tool-row-icon img { width: 100%; height: 100%; object-fit: contain; }
+.tool-row-icon:has(img) { background: transparent; border-color: transparent; }
 
 .tool-row-main { flex: 1; min-width: 0; }
 .tool-row-name {
@@ -635,7 +636,8 @@ html[data-theme="light"] .nav-item.is-active { color: var(--accent-strong); }
   overflow: hidden;
 }
 .icon-preview .icn { width: 20px; height: 20px; }
-.icon-preview img { width: 100%; height: 100%; object-fit: cover; }
+.icon-preview img { width: 100%; height: 100%; object-fit: contain; }
+.icon-preview:has(img) { background: transparent; border-color: transparent; }
 
 .icon-grid {
   display: grid;
