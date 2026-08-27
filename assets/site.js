@@ -298,6 +298,9 @@
   /* ---------- Rendering ---------- */
   var state = { query: "", category: "all" };
   var lastFocusedCard = null;
+  /* Shared pointer position: written by bindPointerFX, read by the
+     ember field so the cursor can stir nearby sparks. */
+  var pointerPos = { x: -1e4, y: -1e4 };
 
   function visibleTools(data) {
     var tools = data.tools.filter(function (t) { return !t.hidden; });
@@ -597,6 +600,8 @@
 
       tx = e.clientX;
       ty = e.clientY;
+      pointerPos.x = tx;
+      pointerPos.y = ty;
       if (cx === -1e4) { cx = tx; cy = ty; }
       if (!raf && window.requestAnimationFrame) raf = requestAnimationFrame(lightLoop);
 
@@ -815,6 +820,163 @@
     history.replaceState(null, "", location.pathname + location.search + "#t=" + encodeURIComponent(tool.id));
   }
 
+  /* Ember field: tiny accent-colored sparks drifting up the page floor.
+     Pre-rendered glow sprites, one small rAF loop that pauses on hidden
+     tabs and honors the animations setting. The pointer stirs sparks
+     within reach, continuing the cursor-is-the-light-source concept. */
+  function bindEmberField() {
+    var canvas = document.getElementById("ember-field");
+    if (!canvas || !canvas.getContext) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      canvas.remove();
+      return;
+    }
+
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var W = 0, H = 0;
+    var parts = [];
+    var sprites = null;
+    var running = false;
+    var rafId = 0;
+    var t = 0;
+    var frames = 0;
+
+    function accentRGB() {
+      var v = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+        var n = parseInt(v.slice(1), 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+      var m = v.match(/(\d+)[, ]+(\d+)[, ]+(\d+)/);
+      return m ? [+m[1], +m[2], +m[3]] : [251, 146, 60];
+    }
+
+    function makeSprite(rgb, size) {
+      var c = document.createElement("canvas");
+      c.width = c.height = size * 2;
+      var g = c.getContext("2d");
+      var grad = g.createRadialGradient(size, size, 0, size, size, size);
+      grad.addColorStop(0, "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ",1)");
+      grad.addColorStop(0.4, "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ",0.45)");
+      grad.addColorStop(1, "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ",0)");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, size * 2, size * 2);
+      return c;
+    }
+
+    function buildSprites() {
+      var rgb = accentRGB();
+      sprites = { s: makeSprite(rgb, 4), m: makeSprite(rgb, 7), l: makeSprite(rgb, 12) };
+    }
+
+    function spawn(anywhere) {
+      var roll = Math.random();
+      return {
+        x: Math.random() * W,
+        y: anywhere ? Math.random() * H : H + 12,
+        vy: 0.1 + Math.random() * 0.28,
+        sway: 0.2 + Math.random() * 0.5,
+        phase: Math.random() * Math.PI * 2,
+        size: roll < 0.72 ? "s" : roll < 0.94 ? "m" : "l",
+        base: 0.22 + Math.random() * 0.5,
+        tw: 0.5 + Math.random() * 1.3,
+        drift: (Math.random() - 0.5) * 0.06
+      };
+    }
+
+    function resize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var target = Math.round(Math.min(64, Math.max(22, W / 24)));
+      while (parts.length < target) parts.push(spawn(true));
+      parts.length = target;
+    }
+
+    function isDark() {
+      return document.documentElement.getAttribute("data-theme") === "dark";
+    }
+
+    function frame() {
+      rafId = 0;
+      if (!running) return;
+      t += 0.016;
+      frames++;
+      if (frames % 300 === 0) buildSprites(); // follow accent/theme changes
+      ctx.clearRect(0, 0, W, H);
+
+      if (animEnabled()) {
+        var globalA = isDark() ? 0.55 : 0.32;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          p.y -= p.vy;
+          p.x += Math.sin(t * p.sway + p.phase) * 0.18 + p.drift;
+
+          var dx = p.x - pointerPos.x;
+          var dy = p.y - pointerPos.y;
+          var d2 = dx * dx + dy * dy;
+          var boost = 0;
+          if (d2 < 22500) { // 150px reach: the cursor stirs the sparks
+            var d = Math.sqrt(d2) || 1;
+            var f = 1 - d / 150;
+            p.x += (dx / d) * f * 1.1;
+            p.y += (dy / d) * f * 0.5;
+            boost = f * 0.4;
+          }
+
+          if (p.y < -14 || p.x < -16 || p.x > W + 16) {
+            parts[i] = spawn(false);
+            continue;
+          }
+          var alpha = p.base * (0.6 + 0.4 * Math.sin(t * p.tw + p.phase)) + boost;
+          ctx.globalAlpha = Math.min(1, alpha * globalA);
+          var sp = sprites[p.size];
+          ctx.drawImage(sp, p.x - sp.width / 2, p.y - sp.height / 2);
+        }
+        ctx.globalAlpha = 1;
+      }
+      schedule();
+    }
+
+    function schedule() {
+      if (!running || rafId || !window.requestAnimationFrame) return;
+      rafId = requestAnimationFrame(frame);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      schedule();
+    }
+    function stop() {
+      running = false;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }
+
+    buildSprites();
+    resize();
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) stop();
+      else start();
+    });
+    new MutationObserver(buildSprites).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"]
+    });
+
+    canvas.__emberDebug = function () { return { count: parts.length, running: running, w: W, h: H }; };
+    if (!document.hidden) start();
+  }
+
   /* ---------- Bindings ---------- */
   function bindSearch(getData) {
     var box = document.getElementById("search-box");
@@ -953,6 +1115,7 @@
 
     bindDialogShell();
     bindPointerFX();
+    bindEmberField();
     bindSearch(function () { return currentData(); });
     bindThemeToggle();
     openFromHash(data);
