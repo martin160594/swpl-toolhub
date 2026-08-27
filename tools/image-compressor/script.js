@@ -352,6 +352,9 @@
         quality: listQuality,
         width: listWidth,
       });
+      // The item may have been removed (or the list cleared) mid-compress;
+      // storing the late result would poison the summary totals.
+      if (!items.some((it) => it.id === id)) return;
       results[id] = res;
 
       if (resultUrls[id]) URL.revokeObjectURL(resultUrls[id]);
@@ -387,12 +390,15 @@
 
     const pct = Math.round((1 - res.compressedSize / res.originalSize) * 100);
     if (pct <= 0) {
+      // Honest label, and the download stays available: an explicit format
+      // conversion can be worth keeping even when it comes out larger.
+      const label = pct === 0 ? 'No change' : `+${Math.abs(pct)}% larger`;
       if (status) {
         status.innerHTML = `
-          <span class="badge badge--neutral">Already optimised</span>
+          <span class="badge badge--neutral">${label}</span>
           <span class="file-card__meta">${fmtBytes(res.originalSize)} → ${fmtBytes(res.compressedSize)}</span>`;
       }
-      if (dlBtn) dlBtn.disabled = true;
+      if (dlBtn) dlBtn.disabled = false;
       return;
     }
 
@@ -418,11 +424,7 @@
 
   // ─── Summary ───────────────────────────────────────────────────────
   function updateSummary() {
-    const valid = Object.entries(results).filter(([id, r]) => {
-      if (!r || r.error) return false;
-      const pct = Math.round((1 - r.compressedSize / r.originalSize) * 100);
-      return pct > 0;
-    });
+    const valid = Object.values(results).filter((r) => r && !r.error);
 
     if (!valid.length) {
       summary.hidden = true;
@@ -431,12 +433,12 @@
 
     let totalOrig = 0;
     let totalComp = 0;
-    valid.forEach(([, r]) => { totalOrig += r.originalSize; totalComp += r.compressedSize; });
+    valid.forEach((r) => { totalOrig += r.originalSize; totalComp += r.compressedSize; });
     const pct = Math.round((1 - totalComp / totalOrig) * 100);
 
     statOriginal.textContent = fmtBytes(totalOrig);
     statCompressed.textContent = fmtBytes(totalComp);
-    statSaved.textContent = `−${Math.abs(pct)}%`;
+    statSaved.textContent = pct >= 0 ? `−${pct}%` : `+${Math.abs(pct)}%`;
     downloadLabel.textContent = valid.length === 1 ? 'Download' : 'Download all';
 
     summary.hidden = false;
@@ -689,8 +691,7 @@
   async function downloadZip() {
     const ready = items.filter((it) => {
       const r = results[it.id];
-      if (!r || r.error) return false;
-      return Math.round((1 - r.compressedSize / r.originalSize) * 100) > 0;
+      return r && !r.error;
     });
     if (!ready.length) {
       showError('No compressed images ready to download.');
@@ -822,15 +823,23 @@
     cmpStatSaved.textContent =
       pct > 0
         ? `−${pct}% (${fmtBytes(res.originalSize - res.compressedSize)})`
-        : 'Already optimised';
+        : pct === 0
+          ? 'No change'
+          : `+${Math.abs(pct)}% (${fmtBytes(res.compressedSize - res.originalSize)} larger)`;
+    const resized = res.width && res.height &&
+      res.originalWidth && res.originalHeight &&
+      (res.width !== res.originalWidth || res.height !== res.originalHeight);
     cmpStatDim.textContent =
       res.width && res.height
-        ? `${res.originalWidth || res.width}×${res.originalHeight || res.height} → ${res.width}×${res.height}`
+        ? (resized
+          ? `${res.originalWidth}×${res.originalHeight} → ${res.width}×${res.height}`
+          : `${res.width}×${res.height}`)
         : origDims;
     cmpStatMime.textContent = (res.mime || '').replace('image/', '').toUpperCase();
-    cmpDownload.disabled = pct <= 0;
+    cmpDownload.disabled = false;
+    const fmtLabel = (res.appliedFormat || res.mime?.split('/')[1] || '').toUpperCase();
     cmpTagComp.textContent =
-      pct > 0 ? `${(res.appliedFormat || res.mime?.split('/')[1] || '').toUpperCase()} −${pct}%` : 'Compressed';
+      pct > 0 ? `${fmtLabel} −${pct}%` : pct === 0 ? `${fmtLabel} ±0%` : `${fmtLabel} +${Math.abs(pct)}%`;
   }
 
   function setDividerPct(pct) {
